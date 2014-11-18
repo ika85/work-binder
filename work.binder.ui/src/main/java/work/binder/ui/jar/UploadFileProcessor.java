@@ -59,6 +59,7 @@ public class UploadFileProcessor extends LayoutReloadComponent {
 	}
 
     }
+
     private Label state = new Label();
     private Label result = new Label();
     private Label fileName = new Label();

@@ -48,8 +48,8 @@ public class PingCatcherServlet extends HttpServlet {
 
 	if (UserContext.getFutureJobs().containsKey(slaveIpAddress)) {
 
-	    String packageLocation = UserContext.getFutureJobs()
-		    .get(slaveIpAddress);
+	    String packageLocation = UserContext.getFutureJobs().get(
+		    slaveIpAddress);
 	    UserContext.getContext().getAvailableIPs().remove(slaveIpAddress);
 	    UserContext.getFutureJobs().remove(slaveIpAddress);
 	    UserContext.getContext().getBusyIPs()
