@@ -17,13 +17,13 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.TwinColSelect;
 
-public class SelectionJarsForNewJob extends LayoutReloadComponent {
+public class SelectionPackagesForNewJob extends LayoutReloadComponent {
 
     private static final long serialVersionUID = 2139331363445389774L;
 
     private TwinColSelect l;
 
-    public SelectionJarsForNewJob(List<String> items) {
+    public SelectionPackagesForNewJob(List<String> items) {
 
 	setSpacing(true);
 
@@ -64,27 +64,27 @@ public class SelectionJarsForNewJob extends LayoutReloadComponent {
 
     @Override
     public void reload() {
-	List<String> jarsList = ResourceUtils.providePrepararedJobs(
-		Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_JAR);
+	List<String> packageList = ResourceUtils.providePrepararedPackages(
+		Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP);
 
 	Map<String, String> futureJobs = UserContext.getFutureJobs();
 
 	// Set<String> occupiedIps = futureJobs.keySet();
-	Collection<String> assignedJars = futureJobs.values();
+	Collection<String> assignedPackages = futureJobs.values();
 
-	List<String> notAssignedJars = new ArrayList<String>();
+	List<String> notAssignedPackages = new ArrayList<String>();
 
-	for (String jar : jarsList) {
+	for (String jar : packageList) {
 	    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION, jar);
-	    if (!assignedJars.contains(jarFile.getAbsoluteFile())) {
-		notAssignedJars.add(jar);
+	    if (!assignedPackages.contains(jarFile.getAbsoluteFile())) {
+		notAssignedPackages.add(jar);
 	    }
 	}
 
 	// List<String> notOccupiedIps = new ArrayList<String>();
 	//
 	// for (String ip : occupiedIps) {
-	// if (!assignedJars.contains(ip)) {
+	// if (!assignedPackages.contains(ip)) {
 	// notOccupiedIps.add(ip);
 	// }
 	// }
@@ -92,7 +92,7 @@ public class SelectionJarsForNewJob extends LayoutReloadComponent {
 	setSpacing(true);
 
 	l.removeAllItems();
-	for (String item : notAssignedJars) {
+	for (String item : notAssignedPackages) {
 	    l.addItem(item);
 	}
 

@@ -34,7 +34,7 @@ public class ResourceUtils {
 	return properties;
     }
 
-    public static List<String> providePrepararedJobs(String filelocation,
+    public static List<String> providePrepararedPackages(String filelocation,
 	    final String dotExt) {
 
 	File file = new File(filelocation);

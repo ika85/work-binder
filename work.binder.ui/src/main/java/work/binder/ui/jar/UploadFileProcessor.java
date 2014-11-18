@@ -24,7 +24,7 @@ import com.vaadin.ui.Upload.SucceededEvent;
 @SuppressWarnings("serial")
 public class UploadFileProcessor extends LayoutReloadComponent {
 
-    public static class JarStorager implements Receiver {
+    public static class PackageStorager implements Receiver {
 
 	private String fileName;
 	private String mtype;
@@ -62,13 +62,9 @@ public class UploadFileProcessor extends LayoutReloadComponent {
     private Label state = new Label();
     private Label result = new Label();
     private Label fileName = new Label();
-
     private Label textualProgress = new Label();
-
     private ProgressIndicator pi = new ProgressIndicator();
-
-    private JarStorager counter = new JarStorager();
-
+    private PackageStorager counter = new PackageStorager();
     private Upload upload = new Upload(null, counter);
 
     // TODO what if there is already file with the same name?!
@@ -76,12 +72,12 @@ public class UploadFileProcessor extends LayoutReloadComponent {
 	setSpacing(true);
 
 	addComponent(new Label(
-		"Upload a jar which will be processed in the next job"));
+		"Upload a Package which will be processed in the next job"));
 
 	// make analyzing start immediatedly when file is selected
 	// TODO maybe the following line should be removed
 	upload.setImmediate(true);
-	upload.setButtonCaption("Upload Jar");
+	upload.setButtonCaption("Upload Package");
 	addComponent(upload);
 
 	final Button cancelProcessing = new Button("Cancel");

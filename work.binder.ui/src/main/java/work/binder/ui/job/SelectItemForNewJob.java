@@ -62,11 +62,11 @@ public abstract class SelectItemForNewJob extends LayoutReloadComponent {
     @Override
     public void reload() {
 	File file = new File(Locations.UPLOAD_PACKAGE_LOCATION);
-	String[] jarsArray = file.list(new FilenameFilter() {
+	String[] packageArray = file.list(new FilenameFilter() {
 
 	    public boolean accept(File arg0, String arg1) {
 
-		return arg1.endsWith(Constants.DOT_JAR);
+		return arg1.endsWith(Constants.DOT_ZIP);
 	    }
 	});
 
@@ -77,7 +77,7 @@ public abstract class SelectItemForNewJob extends LayoutReloadComponent {
 
 	List<String> notAssignedJars = new ArrayList<String>();
 
-	for (String jar : jarsArray) {
+	for (String jar : packageArray) {
 	    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION, jar);
 	    if (!assignedJars.contains(jarFile.getAbsoluteFile())) {
 		notAssignedJars.add(jar);

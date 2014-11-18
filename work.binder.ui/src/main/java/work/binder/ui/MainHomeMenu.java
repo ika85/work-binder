@@ -14,7 +14,7 @@ import work.binder.ui.ip.IPTable;
 import work.binder.ui.jar.UploadFileProcessor;
 import work.binder.ui.job.AssignJob;
 import work.binder.ui.job.SelectIPsForNewJob;
-import work.binder.ui.job.SelectionJarsForNewJob;
+import work.binder.ui.job.SelectionPackagesForNewJob;
 
 import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Window;
@@ -52,11 +52,11 @@ public class MainHomeMenu extends VerticalLayout {
 	Map<String, Command> jobCommands = new LinkedHashMap<String, MenuBar.Command>();
 
 	UploadFileProcessor uploadFileProcess = new UploadFileProcessor();
-	Command addJarCommand = prepareCommand("Add New Jar", uploadFileProcess);
-	jobCommands.put("Add New Jar", addJarCommand);
-	SelectionJarsForNewJob selectionJarsForNewJob = new SelectionJarsForNewJob(
-		ResourceUtils.providePrepararedJobs(
-			Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_JAR));
+	Command addPackageCommand = prepareCommand("Add New Package", uploadFileProcess);
+	jobCommands.put("Add New Package", addPackageCommand);
+	SelectionPackagesForNewJob selectionJarsForNewJob = new SelectionPackagesForNewJob(
+		ResourceUtils.providePrepararedPackages(
+			Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP));
 	SelectIPsForNewJob selectIPsForNewJob = new SelectIPsForNewJob(
 		UserContext.getContext().getAvailableIPs(),
 		_allSecureIPAddresses);

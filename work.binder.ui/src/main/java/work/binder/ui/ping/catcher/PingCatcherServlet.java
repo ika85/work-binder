@@ -48,7 +48,7 @@ public class PingCatcherServlet extends HttpServlet {
 
 	if (UserContext.getFutureJobs().containsKey(slaveIpAddress)) {
 
-	    String jarLocation = UserContext.getFutureJobs()
+	    String packageLocation = UserContext.getFutureJobs()
 		    .get(slaveIpAddress);
 	    UserContext.getContext().getAvailableIPs().remove(slaveIpAddress);
 	    UserContext.getFutureJobs().remove(slaveIpAddress);
@@ -56,7 +56,7 @@ public class PingCatcherServlet extends HttpServlet {
 		    .put(slaveIpAddress, System.currentTimeMillis());
 
 	    try {
-		copyOutFile(response, new File(jarLocation));
+		copyOutFile(response, new File(packageLocation));
 	    } catch (IOException e) {
 		LOG.error(e, e);
 	    }
@@ -112,8 +112,6 @@ public class PingCatcherServlet extends HttpServlet {
 
 	InputStream inputStream = new FileInputStream(file);
 	IOUtils.copy(inputStream, outputStream);
-
-	// response.flushBuffer();
 
 	inputStream.close();
     }

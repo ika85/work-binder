@@ -24,10 +24,10 @@ public class Pinger {
 
     private static Log LOG = LogFactory.getLog(Pinger.class);
     private static final String JOB = "job";
-    private static final String DOT_JAR = ".jar";
+    private static final String DOT_ZIP = ".zip";
     private static final String SLOT_COUNT = "slotCount";
 
-    public static boolean copyStream(InputStream input, File jarFile)
+    public static boolean copyStream(InputStream input, File packageFile)
 	    throws IOException {
 
 	OutputStream outputStream = null;
@@ -39,7 +39,7 @@ public class Pinger {
 	while ((bytesRead = input.read(buffer)) != -1) {
 	    streamNotEmpty = true;
 	    if (outputStream == null) {
-		outputStream = new FileOutputStream(jarFile);
+		outputStream = new FileOutputStream(packageFile);
 	    }
 	    outputStream.write(buffer, 0, bytesRead);
 	}
@@ -64,7 +64,6 @@ public class Pinger {
 
 		if (finishedJob) {
 		    SlaveContext.setFinished(true);
-		    SlaveContext.setJarPath(null);
 		    SlaveContext.setOccupied(false);
 		    nameValuePairs
 			    .add(new BasicNameValuePair("job", "Finished"));
@@ -111,23 +110,25 @@ public class Pinger {
 
 	File slotTempFolder = LocationProcessor.provideBinderFolder(1);
 	if (slotTempFolder != null) {
-	    File jarFile = new File(slotTempFolder, JOB
-		    + System.currentTimeMillis() + DOT_JAR);
-	    if (jarFile.exists()) {
-		FileUtils.forceDelete(jarFile);
+	    File packageFile = new File(slotTempFolder, JOB
+		    + System.currentTimeMillis() + DOT_ZIP);
+	    if (packageFile.exists()) {
+		FileUtils.forceDelete(packageFile);
 	    }
 
-	    boolean fileReadyForExecution = copyStream(inputStream, jarFile);
+	    boolean packageReadyForUsing = copyStream(inputStream, packageFile);
 
 	    inputStream.close();
 
-	    if (fileReadyForExecution) {
+	    if (packageReadyForUsing) {
 		SlaveContext.setOccupied(true);
 		SlaveContext.setFinished(false);
-		SlaveContext.setJarPath(jarFile.getAbsolutePath());
-		Process process = Runtime.getRuntime()
-			.exec(String.format("java -jar %s",
-				jarFile.getAbsolutePath()));
+
+		UnzipUtils.unzip(packageFile, packageFile.getParent());
+
+		Process process = Runtime.getRuntime().exec(
+			String.format("java -jar %s",
+				packageFile.getAbsolutePath()));
 		// try {
 		// int processEnded = process.waitFor();
 		// } catch (InterruptedException e) {

@@ -16,9 +16,9 @@ public class AssignJob extends LayoutReloadComponent implements ClickListener {
     private static final long serialVersionUID = 7839304209716296708L;
     private static final String SPACE = " ";
 
-    private SelectionJarsForNewJob _selectionJarsForNewJob;
+    private SelectionPackagesForNewJob _selectionJarsForNewJob;
 
-    public AssignJob(SelectionJarsForNewJob selectionJarsForNewJob) {
+    public AssignJob(SelectionPackagesForNewJob selectionJarsForNewJob) {
 
 	setSelectionJarsForNewJob(selectionJarsForNewJob);
 
@@ -64,12 +64,12 @@ public class AssignJob extends LayoutReloadComponent implements ClickListener {
 
     }
 
-    private SelectionJarsForNewJob getSelectionJarsForNewJob() {
+    private SelectionPackagesForNewJob getSelectionJarsForNewJob() {
 	return _selectionJarsForNewJob;
     }
 
     private void setSelectionJarsForNewJob(
-	    SelectionJarsForNewJob selectionJarsForNewJob) {
+	    SelectionPackagesForNewJob selectionJarsForNewJob) {
 	_selectionJarsForNewJob = selectionJarsForNewJob;
     }
 }
