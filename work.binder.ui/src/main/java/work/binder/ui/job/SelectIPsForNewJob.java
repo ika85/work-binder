@@ -10,6 +10,8 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 
 import work.binder.ui.LayoutReloadComponent;
+import work.binder.ui.Locations;
+import work.binder.ui.ResourceUtils;
 import work.binder.ui.UserContext;
 
 import com.vaadin.data.Property;
@@ -21,22 +23,22 @@ public class SelectIPsForNewJob extends LayoutReloadComponent {
     private static final long serialVersionUID = 2139331363445389774L;
 
     private TwinColSelect l;
+    private static Properties _allSecureIPAddresses;
 
-    public SelectIPsForNewJob(Map<String, Integer> availableIPs,
-	    Properties allIPs) {
+    static {
+	_allSecureIPAddresses = ResourceUtils
+		.loadIPAdresses(Locations.IP_ADRESSES_PROPERTIES_FILE);
+    }
+
+    public SelectIPsForNewJob() {
+
+	Map<String, Integer> availableIPs = UserContext.getContext()
+		.getAvailableIPs();
 
 	setSpacing(true);
 
 	l = new TwinColSelect();
-	for (String item : availableIPs.keySet()) {
-	    String comment = allIPs.get(item).toString();
-	    if (StringUtils.isEmpty(comment)) {
-		l.addItem(String.format("%s", item));
-	    } else {
-		l.addItem(String.format("%s (%s; slot count: %d)", item, comment,
-			availableIPs.get(item)));
-	    }
-	}
+	addItems(availableIPs);
 	l.setRows(7);
 	l.setNullSelectionAllowed(true);
 	l.setMultiSelect(true);
@@ -75,5 +77,26 @@ public class SelectIPsForNewJob extends LayoutReloadComponent {
 
     @Override
     public void reload() {
+
+	Map<String, Integer> availableIPs = UserContext.getContext()
+		.getAvailableIPs();
+
+	l.removeAllItems();
+
+	addItems(availableIPs);
+
+    }
+
+    private void addItems(Map<String, Integer> availableIPs) {
+
+	for (String item : availableIPs.keySet()) {
+	    String comment = _allSecureIPAddresses.get(item).toString();
+	    if (StringUtils.isEmpty(comment)) {
+		l.addItem(String.format("%s", item));
+	    } else {
+		l.addItem(String.format("%s (%s; slot count: %d)", item,
+			comment, availableIPs.get(item)));
+	    }
+	}
     }
 }

@@ -47,6 +47,7 @@ public class SelectionPackagesForNewJob extends LayoutReloadComponent {
 		Collection selected = (Collection) event.getProperty()
 			.getValue();
 
+		@SuppressWarnings("rawtypes")
 		Iterator iterator = selected.iterator();
 		if (iterator.hasNext()) {
 		    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION,
@@ -69,25 +70,16 @@ public class SelectionPackagesForNewJob extends LayoutReloadComponent {
 
 	Map<String, String> futureJobs = UserContext.getFutureJobs();
 
-	// Set<String> occupiedIps = futureJobs.keySet();
 	Collection<String> assignedPackages = futureJobs.values();
 
 	List<String> notAssignedPackages = new ArrayList<String>();
 
 	for (String jar : packageList) {
 	    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION, jar);
-	    if (!assignedPackages.contains(jarFile.getAbsoluteFile())) {
+	    if (!assignedPackages.contains(jarFile.getAbsolutePath())) {
 		notAssignedPackages.add(jar);
 	    }
 	}
-
-	// List<String> notOccupiedIps = new ArrayList<String>();
-	//
-	// for (String ip : occupiedIps) {
-	// if (!assignedPackages.contains(ip)) {
-	// notOccupiedIps.add(ip);
-	// }
-	// }
 
 	setSpacing(true);
 

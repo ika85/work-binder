@@ -27,12 +27,7 @@ public class MainHomeMenu extends VerticalLayout {
     private static final long serialVersionUID = -1087618745131764334L;
     private MenuBar menubar = new MenuBar();
 
-    private static Properties _allSecureIPAddresses;
-
     static {
-
-	_allSecureIPAddresses = ResourceUtils
-		.loadIPAdresses(Locations.IP_ADRESSES_PROPERTIES_FILE);
 
 	File uploadPackageFolder = new File(Locations.UPLOAD_PACKAGE_LOCATION);
 
@@ -52,14 +47,13 @@ public class MainHomeMenu extends VerticalLayout {
 	Map<String, Command> jobCommands = new LinkedHashMap<String, MenuBar.Command>();
 
 	UploadFileProcessor uploadFileProcess = new UploadFileProcessor();
-	Command addPackageCommand = prepareCommand("Add New Package", uploadFileProcess);
+	Command addPackageCommand = prepareCommand("Add New Package",
+		uploadFileProcess);
 	jobCommands.put("Add New Package", addPackageCommand);
 	SelectionPackagesForNewJob selectionJarsForNewJob = new SelectionPackagesForNewJob(
 		ResourceUtils.providePrepararedPackages(
 			Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP));
-	SelectIPsForNewJob selectIPsForNewJob = new SelectIPsForNewJob(
-		UserContext.getContext().getAvailableIPs(),
-		_allSecureIPAddresses);
+	SelectIPsForNewJob selectIPsForNewJob = new SelectIPsForNewJob();
 	AssignJob assignJob = new AssignJob(selectionJarsForNewJob);
 	Command addJobCommand = prepareCommand("Assign New Jobs",
 		selectionJarsForNewJob, selectIPsForNewJob, assignJob);
