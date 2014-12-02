@@ -14,6 +14,7 @@ import work.binder.ui.Locations;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
@@ -39,6 +40,7 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 	addComponent(slaveIP);
 	addComponent(new Label("Comment:"));
 	addComponent(comment);
+	addComponent(new Label("_"));
 
 	// TODO move the button more lower
 	final Button saveButton = new Button("Add New Secure IP Address");
@@ -46,6 +48,7 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 	saveButton.addListener(this);
 
 	addComponent(saveButton);
+	setComponentAlignment(saveButton, Alignment.TOP_LEFT);
 
     }
 
@@ -58,13 +61,12 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 	if (StringUtils.isEmpty(ip)) {
 
 	    getWindow().showNotification("IP Address must be specified");
-	}
-
-	if (getProperties().keySet().contains(ip)) {
-	    addComponent(new Label(
-		    String.format(
-			    "IP (%s) has already been added. Type some other IP address.",
-			    ip)));
+	} else if (getProperties().keySet().contains(ip)) {
+	    getWindow()
+		    .showNotification(
+			    String.format(
+				    "IP (%s) has already been added. Type some other IP address.",
+				    ip));
 	} else {
 	    Object commentObj = getComment().getValue();
 	    String comment = commentObj.toString();

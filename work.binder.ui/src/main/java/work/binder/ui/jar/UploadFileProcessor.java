@@ -73,7 +73,7 @@ public class UploadFileProcessor extends LayoutReloadComponent {
 	setSpacing(true);
 
 	addComponent(new Label(
-		"Upload a Package which will be processed in the next job"));
+		"Upload a Package which will be sent to the available slave machine."));
 
 	// make analyzing start immediatedly when file is selected
 	// TODO maybe the following line should be removed

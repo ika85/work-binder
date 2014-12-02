@@ -10,6 +10,8 @@ public class WorkBinderApplication extends Application {
     @Override
     public void init() {
 	Window mainWindow = new Window("WorkBinderApplication");
+	mainWindow.setStyleName("packageTheme");
+	mainWindow.setTheme("packageTheme");
 
 	MainHomeMenu homeMenu = new MainHomeMenu();
 	mainWindow.addComponent(homeMenu);

@@ -16,7 +16,7 @@ public class ResourceUtils {
     public static Properties loadIPAdresses(String filePath) {
 
 	Properties properties = new Properties();
-	// TODO this should no be done every time!
+	// TODO this should not be done every time!
 	InputStream inputStream;
 	try {
 	    inputStream = new FileInputStream(filePath);

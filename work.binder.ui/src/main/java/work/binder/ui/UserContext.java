@@ -6,15 +6,15 @@ import java.util.Map;
 public class UserContext {
 
     private static UserContext _userContext;
-    private static Job _job = new Job();
+    private static Package _job = new Package();
 
-    public static Map<String, String> getFutureJobs() {
-	return _futureJobs;
+    public static Map<String, String> getPackagesForSending() {
+	return _packagesForSending;
     }
 
     private Map<String, Integer> _availableIPs = new HashMap<String, Integer>();
     private Map<String, Long> _busyIPs = new HashMap<String, Long>();
-    private static Map<String, String> _futureJobs = new HashMap<String, String>();
+    private static Map<String, String> _packagesForSending = new HashMap<String, String>();
 
     public static UserContext getContext() {
 	if (_userContext == null) {
@@ -23,13 +23,14 @@ public class UserContext {
 	return _userContext;
     }
 
-    public static void setFutureJobs(Map<String, String> futureJobs) {
-	_futureJobs = futureJobs;
+    public static void setPackagesForSending(
+	    Map<String, String> packagesForSending) {
+	_packagesForSending = packagesForSending;
     }
 
     private UserContext() {
 
-	setJob(new Job());
+	setJob(new Package());
 
     }
 
@@ -41,7 +42,7 @@ public class UserContext {
 	return _busyIPs;
     }
 
-    public Job getJob() {
+    public Package getJob() {
 	return _job;
     }
 
@@ -53,7 +54,7 @@ public class UserContext {
 	_busyIPs = busyIPs;
     }
 
-    private void setJob(Job job) {
+    private void setJob(Package job) {
 	_job = job;
     }
 

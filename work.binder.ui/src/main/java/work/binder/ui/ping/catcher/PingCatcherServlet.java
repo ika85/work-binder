@@ -25,7 +25,7 @@ public class PingCatcherServlet extends HttpServlet {
 
     private static final long serialVersionUID = -8172228957633153144L;
     private static final String FINISHED = "Finished";
-    private static final String JOB = "job";
+    private static final String EXECUTION = "execution";
     private static final String FORWARD_FOR = "X-FORWARDED-FOR";
     private static final String SLOT_COUNT = "slotCount";
 
@@ -46,12 +46,12 @@ public class PingCatcherServlet extends HttpServlet {
 	@SuppressWarnings("unchecked")
 	Map<String, String[]> params = request.getParameterMap();
 
-	if (UserContext.getFutureJobs().containsKey(slaveIpAddress)) {
+	if (UserContext.getPackagesForSending().containsKey(slaveIpAddress)) {
 
-	    String packageLocation = UserContext.getFutureJobs().get(
+	    String packageLocation = UserContext.getPackagesForSending().get(
 		    slaveIpAddress);
 	    UserContext.getContext().getAvailableIPs().remove(slaveIpAddress);
-	    UserContext.getFutureJobs().remove(slaveIpAddress);
+	    UserContext.getPackagesForSending().remove(slaveIpAddress);
 	    UserContext.getContext().getBusyIPs()
 		    .put(slaveIpAddress, System.currentTimeMillis());
 
@@ -64,11 +64,15 @@ public class PingCatcherServlet extends HttpServlet {
 	} else if (UserContext.getContext().getBusyIPs()
 		.containsKey(slaveIpAddress)) {
 
-	    if (params.containsKey(JOB)) {
+	    if (params.containsKey(EXECUTION)) {
 
-		String jobStatus = params.get(JOB)[0];
+		String jobStatus = params.get(EXECUTION)[0];
 
 		if (FINISHED.equals(jobStatus)) {
+
+		    UserContext.getContext().getBusyIPs()
+			    .remove(slaveIpAddress);
+		    addAvailableIP(params, slaveIpAddress);
 		    // http://stackoverflow.com/questions/6873830/in-java-determine-if-a-process-created-using-runtime-environment-has-finished-ex
 
 		}
@@ -77,24 +81,32 @@ public class PingCatcherServlet extends HttpServlet {
 	    }
 
 	} else {
-	    // TODO3
-	    // should add every time some slave
-	    // if we do that, we know that slave is available (computer
-	    // isn't turn of i a middle time)
-	    // if we don't do that we will know how long that machine waits
-	    // for the job(maybe we should save both info)
 
-	    int slotCount = 0;
-	    if (params.containsKey(SLOT_COUNT)) {
-		String slotCountString = params.get(SLOT_COUNT)[0];
-
-		slotCount = (StringUtils.isEmpty(slotCountString)) ? 0
-			: Integer.valueOf(slotCountString);
-	    }
-
-	    UserContext.getContext().getAvailableIPs()
-		    .put(slaveIpAddress, slotCount);
+	    addAvailableIP(params, slaveIpAddress);
 	}
+
+    }
+
+    private void addAvailableIP(Map<String, String[]> params,
+	    String slaveIpAddress) {
+
+	// TODO3
+	// should add every time some slave
+	// if we do that, we know that slave is available (computer
+	// isn't turn of i a middle time)
+	// if we don't do that we will know how long that machine waits
+	// for the job(maybe we should save both info)
+
+	int slotCount = 0;
+	if (params.containsKey(SLOT_COUNT)) {
+	    String slotCountString = params.get(SLOT_COUNT)[0];
+
+	    slotCount = (StringUtils.isEmpty(slotCountString)) ? 0 : Integer
+		    .valueOf(slotCountString);
+	}
+
+	UserContext.getContext().getAvailableIPs()
+		.put(slaveIpAddress, slotCount);
 
     }
 

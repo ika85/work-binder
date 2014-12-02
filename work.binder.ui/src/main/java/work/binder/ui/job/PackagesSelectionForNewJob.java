@@ -17,13 +17,13 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.TwinColSelect;
 
-public class SelectionPackagesForNewJob extends LayoutReloadComponent {
+public class PackagesSelectionForNewJob extends LayoutReloadComponent {
 
     private static final long serialVersionUID = 2139331363445389774L;
 
     private TwinColSelect l;
 
-    public SelectionPackagesForNewJob(List<String> items) {
+    public PackagesSelectionForNewJob(List<String> items) {
 
 	setSpacing(true);
 
@@ -54,7 +54,7 @@ public class SelectionPackagesForNewJob extends LayoutReloadComponent {
 			    iterator.next().toString());
 		    // TODO4 what if there is more than one jar
 		    UserContext.getContext().getJob()
-			    .setJobPackage(jarFile.getAbsolutePath());
+			    .setPackage(jarFile.getAbsolutePath());
 		}
 	    }
 	});
@@ -68,7 +68,7 @@ public class SelectionPackagesForNewJob extends LayoutReloadComponent {
 	List<String> packageList = ResourceUtils.providePrepararedPackages(
 		Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP);
 
-	Map<String, String> futureJobs = UserContext.getFutureJobs();
+	Map<String, String> futureJobs = UserContext.getPackagesForSending();
 
 	Collection<String> assignedPackages = futureJobs.values();
 

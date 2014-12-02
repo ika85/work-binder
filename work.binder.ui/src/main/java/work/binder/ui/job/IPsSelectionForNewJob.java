@@ -18,7 +18,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.TwinColSelect;
 
-public class SelectIPsForNewJob extends LayoutReloadComponent {
+public class IPsSelectionForNewJob extends LayoutReloadComponent {
 
     private static final long serialVersionUID = 2139331363445389774L;
 
@@ -30,7 +30,7 @@ public class SelectIPsForNewJob extends LayoutReloadComponent {
 		.loadIPAdresses(Locations.IP_ADRESSES_PROPERTIES_FILE);
     }
 
-    public SelectIPsForNewJob() {
+    public IPsSelectionForNewJob() {
 
 	Map<String, Integer> availableIPs = UserContext.getContext()
 		.getAvailableIPs();

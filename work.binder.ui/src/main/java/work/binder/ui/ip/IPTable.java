@@ -33,18 +33,19 @@ public class IPTable extends LayoutReloadComponent {
 	table.setColumnHeaders(new String[] { "IP Address", "Available",
 		"Busy", "Comment" });
 
-	table.setColumnAlignment(IPAddressTablePreparator.BUSY,
+	table.setColumnAlignment(IPAddressTablePreparator.IP_ADDRESS,
 		Table.ALIGN_CENTER);
 	table.setColumnAlignment(IPAddressTablePreparator.AVAILABLE,
 		Table.ALIGN_CENTER);
-	table.setColumnAlignment(IPAddressTablePreparator.COMMENT,
+	table.setColumnAlignment(IPAddressTablePreparator.BUSY,
 		Table.ALIGN_CENTER);
 	table.setColumnAlignment(IPAddressTablePreparator.COMMENT,
 		Table.ALIGN_CENTER);
 
-	table.setColumnWidth(IPAddressTablePreparator.COMMENT, 90);
-	table.setColumnExpandRatio(IPAddressTablePreparator.IP_ADDRESS, 1);
+	table.setColumnWidth(IPAddressTablePreparator.IP_ADDRESS, 90);
+	table.setColumnWidth(IPAddressTablePreparator.AVAILABLE, 70);
 	table.setColumnWidth(IPAddressTablePreparator.BUSY, 70);
+	table.setColumnWidth(IPAddressTablePreparator.COMMENT, 90);
 
     }
 
