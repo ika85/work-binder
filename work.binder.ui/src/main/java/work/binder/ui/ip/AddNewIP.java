@@ -85,9 +85,7 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 		e.printStackTrace();
 	    }
 
-	    getIpTable().getTable().setContainerDataSource(
-		    IPAddressTablePreparator
-			    .provideIPAddressContainer(getProperties()));
+	    getIpTable().fillContainerDataSource(getProperties());
 
 	    addComponent(new Label(String.format("IP (%s) added.", ip)));
 

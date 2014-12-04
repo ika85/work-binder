@@ -1,14 +1,29 @@
 package work.binder.ui.ip;
 
+import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 
 import work.binder.ui.LayoutReloadComponent;
+import work.binder.ui.UserContext;
+
+import com.vaadin.data.Container;
+import com.vaadin.data.Item;
+import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Table;
+import com.vaadin.ui.Button.ClickEvent;
 
 @SuppressWarnings("serial")
 public class IPTable extends LayoutReloadComponent {
 
     private Table _table;
+
+    public static final Object IP_ADDRESS = "ipAdress";
+    public static final Object BUSY = "busy";
+    public static final Object COMMENT = "comment";
+    public static final Object AVAILABLE = "available";
+    public static final Object CANCEL = "cancel";
 
     // TODO should we add Remove Button for IP; and/or Edit button for the
     // comment
@@ -24,28 +39,25 @@ public class IPTable extends LayoutReloadComponent {
 	table.setMultiSelect(true);
 	table.setImmediate(true);
 
-	table.setContainerDataSource(IPAddressTablePreparator
-		.provideIPAddressContainer(properties));
+	table.setContainerDataSource(provideIPAddressContainer(properties));
 
 	table.setColumnReorderingAllowed(true);
 	table.setColumnCollapsingAllowed(true);
 
 	table.setColumnHeaders(new String[] { "IP Address", "Available",
-		"Busy", "Comment" });
+		"Busy", "Comment", "Cancel" });
 
-	table.setColumnAlignment(IPAddressTablePreparator.IP_ADDRESS,
-		Table.ALIGN_CENTER);
-	table.setColumnAlignment(IPAddressTablePreparator.AVAILABLE,
-		Table.ALIGN_CENTER);
-	table.setColumnAlignment(IPAddressTablePreparator.BUSY,
-		Table.ALIGN_CENTER);
-	table.setColumnAlignment(IPAddressTablePreparator.COMMENT,
-		Table.ALIGN_CENTER);
+	table.setColumnAlignment(IP_ADDRESS, Table.ALIGN_CENTER);
+	table.setColumnAlignment(AVAILABLE, Table.ALIGN_CENTER);
+	table.setColumnAlignment(BUSY, Table.ALIGN_CENTER);
+	table.setColumnAlignment(COMMENT, Table.ALIGN_CENTER);
+	table.setColumnAlignment(CANCEL, Table.ALIGN_CENTER);
 
-	table.setColumnWidth(IPAddressTablePreparator.IP_ADDRESS, 90);
-	table.setColumnWidth(IPAddressTablePreparator.AVAILABLE, 70);
-	table.setColumnWidth(IPAddressTablePreparator.BUSY, 70);
-	table.setColumnWidth(IPAddressTablePreparator.COMMENT, 90);
+	table.setColumnWidth(IP_ADDRESS, 90);
+	table.setColumnWidth(AVAILABLE, 70);
+	table.setColumnWidth(BUSY, 70);
+	table.setColumnWidth(COMMENT, 90);
+	table.setColumnWidth(CANCEL, 90);
 
     }
 
@@ -56,11 +68,90 @@ public class IPTable extends LayoutReloadComponent {
     @Override
     public void reload() {
 
-	IPAddressTablePreparator.reloadIPAddressContainer(getTable()
-		.getContainerDataSource());
+	reloadIPAddressContainer(getTable().getContainerDataSource());
     }
 
     private void setTable(Table table) {
 	_table = table;
+    }
+
+    protected void fillContainerDataSource(Properties properties) {
+
+	getTable()
+		.setContainerDataSource(provideIPAddressContainer(properties));
+    }
+
+    protected IndexedContainer provideIPAddressContainer(Properties properties) {
+
+	IndexedContainer container = new IndexedContainer();
+	container.addContainerProperty(IP_ADDRESS, String.class, null);
+	container.addContainerProperty(AVAILABLE, String.class, null);
+	container.addContainerProperty(BUSY, String.class, null);
+	container.addContainerProperty(COMMENT, String.class, null);
+	container.addContainerProperty(CANCEL, Button.class, null);
+
+	Set<Object> keys = properties.keySet();
+	for (Object key : keys) {
+	    Item item = container.addItem(key);
+	    item.getItemProperty(IP_ADDRESS).setValue(key);
+	    boolean busy = UserContext.getContext().getBusyIPs()
+		    .containsKey(key);
+	    item.getItemProperty(BUSY).setValue(busy);
+	    boolean available = UserContext.getContext().getAvailableIPs()
+		    .containsKey(key);
+	    item.getItemProperty(AVAILABLE).setValue(available);
+	    item.getItemProperty(COMMENT).setValue(
+		    properties.get(key).toString());
+
+	    Button cancelButton = new Button("Cancel");
+	    cancelButton.addListener(new Button.ClickListener() {
+
+		public void buttonClick(ClickEvent event) {
+
+		    Object selectedItemsObj = getTable().getValue();
+		    if (selectedItemsObj != null) {
+			if (selectedItemsObj instanceof Collection) {
+
+			    @SuppressWarnings("unchecked")
+			    Collection<String> selectedItems = (Collection<String>) selectedItemsObj;
+
+			    String selectedItem = selectedItems.iterator()
+				    .next();
+
+			    UserContext.getContext().addIPForCanceling(
+				    selectedItem);
+			}
+		    }
+
+		}
+	    });
+	    cancelButton.setEnabled(true);
+	    cancelButton.setImmediate(true);
+	    cancelButton.setVisible(true);
+
+	    item.getItemProperty(CANCEL).setValue(cancelButton);
+	}
+	container.sort(new Object[] { IP_ADDRESS }, new boolean[] { true });
+	return container;
+    }
+
+    protected void reloadIPAddressContainer(Container container) {
+	Collection<?> collection = container.getItemIds();
+
+	for (Object ipAddressObj : collection) {
+
+	    if (ipAddressObj instanceof String) {
+
+		String ipAddress = ipAddressObj.toString();
+		Item item = container.getItem(ipAddress);
+
+		boolean busy = UserContext.getContext().getBusyIPs()
+			.containsKey(ipAddress);
+		item.getItemProperty(BUSY).setValue(busy);
+		boolean available = UserContext.getContext().getAvailableIPs()
+			.containsKey(ipAddress);
+		item.getItemProperty(AVAILABLE).setValue(available);
+	    }
+	}
     }
 }

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 //import org.apache.commons.io.StreamUtils;
@@ -28,6 +29,8 @@ public class PingCatcherServlet extends HttpServlet {
     private static final String EXECUTION = "execution";
     private static final String FORWARD_FOR = "X-FORWARDED-FOR";
     private static final String SLOT_COUNT = "slotCount";
+    private static final String CANCEL = "cancel";
+    private static final String CANCELED = "canceled";
 
     @Override
     /**
@@ -46,14 +49,25 @@ public class PingCatcherServlet extends HttpServlet {
 	@SuppressWarnings("unchecked")
 	Map<String, String[]> params = request.getParameterMap();
 
-	if (UserContext.getPackagesForSending().containsKey(slaveIpAddress)) {
+	Boolean alreadyRequestedCanceling = UserContext.getContext()
+		.getIpsForJobCanceling().get(slaveIpAddress);
+	if (alreadyRequestedCanceling != null) {
+
+	    if (!alreadyRequestedCanceling) {
+		UserContext.getContext().getIpsForJobCanceling()
+			.put(slaveIpAddress, true);
+
+		response.addHeader(CANCEL, null);
+	    }
+	} else if (UserContext.getPackagesForSending().containsKey(
+		slaveIpAddress)) {
 
 	    String packageLocation = UserContext.getPackagesForSending().get(
 		    slaveIpAddress);
 	    UserContext.getContext().getAvailableIPs().remove(slaveIpAddress);
 	    UserContext.getPackagesForSending().remove(slaveIpAddress);
 	    UserContext.getContext().getBusyIPs()
-		    .put(slaveIpAddress, System.currentTimeMillis());
+		    .put(slaveIpAddress, packageLocation);
 
 	    try {
 		copyOutFile(response, new File(packageLocation));
@@ -70,11 +84,24 @@ public class PingCatcherServlet extends HttpServlet {
 
 		if (FINISHED.equals(jobStatus)) {
 
+		    String packageLocation = UserContext
+			    .getPackagesForSending().get(slaveIpAddress);
+
+		    try {
+			FileUtils.forceDelete(new File(packageLocation));
+		    } catch (IOException e) {
+			// TODO handle exception
+		    }
+
 		    UserContext.getContext().getBusyIPs()
 			    .remove(slaveIpAddress);
 		    addAvailableIP(params, slaveIpAddress);
-		    // http://stackoverflow.com/questions/6873830/in-java-determine-if-a-process-created-using-runtime-environment-has-finished-ex
 
+		} else if (CANCELED.equals(jobStatus)) {
+
+		    UserContext.getContext().getBusyIPs()
+			    .remove(slaveIpAddress);
+		    addAvailableIP(params, slaveIpAddress);
 		}
 		// process this message
 

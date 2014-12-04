@@ -13,8 +13,18 @@ public class UserContext {
     }
 
     private Map<String, Integer> _availableIPs = new HashMap<String, Integer>();
-    private Map<String, Long> _busyIPs = new HashMap<String, Long>();
+    private Map<String, String> _busyIPs = new HashMap<String, String>();
     private static Map<String, String> _packagesForSending = new HashMap<String, String>();
+    // IP + is request for canceling sent?
+    private Map<String, Boolean> _ipsForJobCanceling = new HashMap<String, Boolean>();
+
+    public Map<String, Boolean> getIpsForJobCanceling() {
+	return _ipsForJobCanceling;
+    }
+
+    public void setIpsForJobCanceling(Map<String, Boolean> ipsForJobCanceling) {
+	_ipsForJobCanceling = ipsForJobCanceling;
+    }
 
     public static UserContext getContext() {
 	if (_userContext == null) {
@@ -38,7 +48,7 @@ public class UserContext {
 	return _availableIPs;
     }
 
-    public Map<String, Long> getBusyIPs() {
+    public Map<String, String> getBusyIPs() {
 	return _busyIPs;
     }
 
@@ -50,8 +60,8 @@ public class UserContext {
 	_availableIPs = availableIPs;
     }
 
-    public void setBusyIPs(Map<String, Long> busyIPs) {
-	_busyIPs = busyIPs;
+    public void addIPForCanceling(String ip) {
+	getIpsForJobCanceling().put(ip, false);
     }
 
     private void setJob(Package job) {

@@ -71,12 +71,12 @@ public class MainHomeMenu extends VerticalLayout {
 	IPTable ipTable = new IPTable(properties);
 
 	Command ipTableCommand = prepareCommand("Show All Secure IP Addresses",
-		"450px", "70%", ipTable);
+		"520px", "70%", ipTable);
 	ipCommands.put("Show All Secure IP Addresses", ipTableCommand);
 
 	AddNewIP addNewIPButton = new AddNewIP(ipTable, properties);
 	Command ipTableAndNewIpCommand = prepareCommand(
-		"Add New Secure IP address", "450px", "70%", ipTable,
+		"Add New Secure IP address", "520px", "70%", ipTable,
 		addNewIPButton);
 	ipCommands.put("Add New Secure IP address", ipTableAndNewIpCommand);
 
@@ -85,6 +85,7 @@ public class MainHomeMenu extends VerticalLayout {
 	addComponent(menubar);
 
     }
+
 
     private void addItem(String itemName, Map<String, Command> subItemsData) {
 
