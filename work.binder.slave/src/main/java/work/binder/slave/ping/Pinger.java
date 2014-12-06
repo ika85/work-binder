@@ -103,7 +103,7 @@ public class Pinger {
 		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
 			    FINISHED));
 		    SlaveContext.setOccupied(false);
-//		    LocationProcessor.deletePackagesOnSlave();
+		    LocationProcessor.deletePackagesOnSlave();
 
 		} else {
 
@@ -181,7 +181,6 @@ public class Pinger {
 		    if (executionSuccessfullyFinished) {
 			SlaveContext.setFinished(true);
 
-			LocationProcessor.deletePackagesOnSlave();
 		    }
 
 		}
