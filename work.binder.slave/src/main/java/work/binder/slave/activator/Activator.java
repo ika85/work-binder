@@ -7,7 +7,7 @@ import work.binder.slave.ping.Pinger;
 
 public class Activator implements BundleActivator {
 
-    private static final String MASTER_URL = "http://192.168.1.2:8080/work.binder.ui/ping";
+    private static final String MASTER_URL = "http://127.0.0.1:8080/work.binder.ui/ping";
 
     private static BundleContext context;
 

@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
+
 public class LocationProcessor {
 
     private static int _slotCount;
@@ -19,12 +21,9 @@ public class LocationProcessor {
     }
 
     private static final String BINDER_SLAVE = "binder";
+    private static final String DASH = "-";
 
     private static Map<Integer, File> _slots;
-
-    protected static int getSlotCount() {
-	return _slotCount;
-    }
 
     private static void createDownloadTempDirs() {
 
@@ -32,7 +31,8 @@ public class LocationProcessor {
 	for (int i = 0; i < coreCount; i++) {
 
 	    try {
-		Path tempPath = Files.createTempDirectory(BINDER_SLAVE + i);
+		Path tempPath = Files.createTempDirectory(BINDER_SLAVE + DASH
+			+ i + DASH);
 		File file = tempPath.toFile();
 
 		if (file.exists()) {
@@ -42,6 +42,27 @@ public class LocationProcessor {
 		e1.printStackTrace();
 	    }
 	}
+    }
+
+    protected static void deletePackagesOnSlave() {
+
+	for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
+
+	    File slotTempFolder = LocationProcessor.provideBinderFolder(i);
+	    if (slotTempFolder != null) {
+		if (slotTempFolder.exists()) {
+		    try {
+			FileUtils.forceDelete(slotTempFolder);
+		    } catch (IOException e) {
+			// handle exception
+		    }
+		}
+	    }
+	}
+    }
+
+    protected static int getSlotCount() {
+	return _slotCount;
     }
 
     /**

@@ -11,8 +11,11 @@ import java.util.zip.ZipFile;
 public class UnzipUtils {
 
     private static final int BUFFER = 2048;
+    private static final String DOT_BAT = ".bat";
 
-    public static void unzip(File zipFile, String outputFolder) {
+    public static String unzip(File zipFile, String outputFolder) {
+
+	String exeFilePath = null;
 	try {
 
 	    ZipFile zip = new ZipFile(zipFile);
@@ -51,6 +54,12 @@ public class UnzipUtils {
 		    dest.flush();
 		    dest.close();
 		    is.close();
+
+		    // should we handle situation when there is more then one
+		    // batch file
+		    if (currentEntry.endsWith(DOT_BAT)) {
+			exeFilePath = destFile.getAbsolutePath();
+		    }
 		}
 
 	    }
@@ -60,6 +69,8 @@ public class UnzipUtils {
 	    e.printStackTrace();
 	    // TODO add exception handle
 	}
+
+	return exeFilePath;
 
     }
 

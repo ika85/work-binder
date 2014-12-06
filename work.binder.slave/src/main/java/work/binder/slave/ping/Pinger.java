@@ -1,9 +1,11 @@
 package work.binder.slave.ping;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -23,9 +26,16 @@ import org.apache.http.message.BasicNameValuePair;
 public class Pinger {
 
     private static Log LOG = LogFactory.getLog(Pinger.class);
-    private static final String JOB = "job";
+    private static final String PACKAGE = "package";
     private static final String DOT_ZIP = ".zip";
     private static final String SLOT_COUNT = "slotCount";
+    private static final String EXECUTION = "execution";
+    private static final String IN_PROGRESS = "In Progress";
+    private static final String FINISHED = "Finished";
+    private static final String CANCEL = "cancel";
+    private static final String CANCELED = "canceled";
+
+    private static final String TASKLIST = "tasklist";
 
     public static boolean copyStream(InputStream input, File packageFile)
 	    throws IOException {
@@ -51,6 +61,35 @@ public class Pinger {
 	return streamNotEmpty;
     }
 
+    public static String isProcessRunning(String serviceName) {
+
+	String serviceId = null;
+
+	Process p;
+	try {
+	    p = Runtime.getRuntime().exec(TASKLIST);
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(
+		    p.getInputStream()));
+	    String line;
+	    while ((line = reader.readLine()) != null) {
+
+		if (line.contains(serviceName)) {
+
+		    String linePart = line.substring(serviceName.length())
+			    .trim();
+		    serviceId = linePart.substring(0, linePart.indexOf(" "));
+		    break;
+		}
+	    }
+
+	} catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+	return serviceId;
+    }
+
     public static void ping(String masterUrl) {
 
 	HttpClient client = new DefaultHttpClient();
@@ -60,16 +99,16 @@ public class Pinger {
 
 	    if (SlaveContext.isOccupied()) {
 
-		boolean finishedJob = addFinishedJobs(post);
-
-		if (finishedJob) {
-		    SlaveContext.setFinished(true);
+		if (SlaveContext.isFinished()) {
+		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			    FINISHED));
 		    SlaveContext.setOccupied(false);
-		    nameValuePairs
-			    .add(new BasicNameValuePair("job", "Finished"));
+//		    LocationProcessor.deletePackagesOnSlave();
+
 		} else {
-		    nameValuePairs.add(new BasicNameValuePair("job",
-			    "In Progress"));
+
+		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			    IN_PROGRESS));
 		}
 	    } else {
 		nameValuePairs.add(new BasicNameValuePair(SLOT_COUNT, ""
@@ -80,13 +119,74 @@ public class Pinger {
 
 	    try {
 		HttpResponse response = client.execute(post);
-		InputStream inputStream = response.getEntity().getContent();
 
-		executeAssignedJob(inputStream);
+		Header[] headers = response.getHeaders(CANCEL);
 
+		boolean continueWithWork = true;
+
+		if (headers != null && headers.length > 0) {
+		    Header header = headers[0];
+		    String headerName = header.getName();
+
+		    if (CANCEL.equals(headerName)) {
+			continueWithWork = false;
+			if (SlaveContext.isOccupied()
+				&& !SlaveContext.isFinished()) {
+			    List<ProcessData> processes = SlaveContext
+				    .getProcesses();
+
+			    for (ProcessData processData : processes) {
+
+				Process process = processData.getProcess();
+				if (process != null) {
+				    // TODO kill win/linux... process, not just
+				    // java
+				    process.destroy();
+
+				    // String processName =
+				    // java.lang.management.ManagementFactory
+				    // .getRuntimeMXBean().getName();
+				    // Long pid = Long.parseLong(processName
+				    // .split("@")[0]);
+
+				    String serviceId = isProcessRunning(processData
+					    .getServiceName());
+
+				    if (serviceId != null) {
+					// windows solution, check linux & mac
+					Runtime.getRuntime()
+						.exec("taskkill /f /pid "
+							+ serviceId);
+				    }
+				    // what if execution isn't cancelled for
+				    // some
+				    // reason
+
+				    nameValuePairs.add(new BasicNameValuePair(
+					    EXECUTION, CANCELED));
+				    SlaveContext.setFinished(true);
+				    SlaveContext.setOccupied(false);
+				}
+			    }
+
+			}
+		    }
+		}
+
+		if (continueWithWork) {
+		    InputStream inputStream = response.getEntity().getContent();
+
+		    boolean executionSuccessfullyFinished = executeIfThereIsSomething(inputStream);
+
+		    if (executionSuccessfullyFinished) {
+			SlaveContext.setFinished(true);
+
+			LocationProcessor.deletePackagesOnSlave();
+		    }
+
+		}
 	    } catch (ConnectException e) {
-		LOG.error("There is a problem in the connect to the Master computer. Maybe application on the Master computer hasn't been started.");
-		LOG.error(e, e);
+		LOG.error("There is a problem with a connection to the Master computer. Maybe application on the Master computer hasn't been started.");
 	    }
 
 	} catch (IOException e) {
@@ -98,45 +198,59 @@ public class Pinger {
     // master could set estimates for the job; if the job isn't done in the
     // expected period; master could abort the job, and send the job to some
     // other slave
-    private static boolean addFinishedJobs(HttpPost post) {
-
-	boolean finished = false;
-
-	return finished;
-    }
-
-    private static void executeAssignedJob(InputStream inputStream)
+    private static boolean executeIfThereIsSomething(InputStream inputStream)
 	    throws IOException {
 
-	File slotTempFolder = LocationProcessor.provideBinderFolder(1);
-	if (slotTempFolder != null) {
-	    File packageFile = new File(slotTempFolder, JOB
-		    + System.currentTimeMillis() + DOT_ZIP);
-	    if (packageFile.exists()) {
-		FileUtils.forceDelete(packageFile);
-	    }
+	boolean executionSuccessfullyFinished = false;
 
-	    boolean packageReadyForUsing = copyStream(inputStream, packageFile);
+	for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
 
-	    inputStream.close();
+	    File slotTempFolder = LocationProcessor.provideBinderFolder(i);
+	    if (slotTempFolder != null) {
+		File packageFile = new File(slotTempFolder, PACKAGE
+			+ System.currentTimeMillis() + DOT_ZIP);
+		if (packageFile.exists()) {
+		    FileUtils.forceDelete(packageFile);
+		}
 
-	    if (packageReadyForUsing) {
-		SlaveContext.setOccupied(true);
-		SlaveContext.setFinished(false);
+		boolean packageReadyForUsing = copyStream(inputStream,
+			packageFile);
 
-		UnzipUtils.unzip(packageFile, packageFile.getParent());
+		if (packageReadyForUsing) {
 
-		Process process = Runtime.getRuntime().exec(
-			String.format("java -jar %s",
-				packageFile.getAbsolutePath()));
-		// try {
-		// int processEnded = process.waitFor();
-		// } catch (InterruptedException e) {
-		// e.printStackTrace();
-		// }
+		    SlaveContext.setOccupied(true);
+		    SlaveContext.setFinished(false);
 
+		    String exeFilePath = UnzipUtils.unzip(packageFile,
+			    packageFile.getParent());
+
+		    String fileName = new File(exeFilePath).getName();
+		    // add switch for sh file
+		    Process process = Runtime.getRuntime().exec(exeFilePath);
+
+		    ProcessData processData = new ProcessData();
+		    processData.setProcess(process);
+		    processData.setServiceName(fileName);
+
+		    SlaveContext.getProcesses().add(processData);
+		    try {
+			int processEnded = process.waitFor();
+
+			executionSuccessfullyFinished = processEnded == 0;
+
+			// what if there is some problem during execution of
+			// Main
+			// class from specified jar?
+
+		    } catch (InterruptedException e) {
+			e.printStackTrace();
+		    }
+
+		}
 	    }
 	}
 	// TODO add what if slotTempFolder == null;
+
+	return executionSuccessfullyFinished;
     }
 }
