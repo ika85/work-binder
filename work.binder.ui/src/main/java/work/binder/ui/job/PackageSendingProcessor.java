@@ -6,6 +6,7 @@ import work.binder.ui.Package;
 import work.binder.ui.LayoutReloadComponent;
 import work.binder.ui.UserContext;
 
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -29,6 +30,8 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 	saveButton.addListener(this);
 
 	addComponent(saveButton);
+	
+	setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
 
     }
 

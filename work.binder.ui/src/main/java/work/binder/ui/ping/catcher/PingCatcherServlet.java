@@ -11,10 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-//import org.apache.commons.io.StreamUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -86,12 +84,6 @@ public class PingCatcherServlet extends HttpServlet {
 
 		    String packageLocation = UserContext
 			    .getPackagesForSending().get(slaveIpAddress);
-
-		    try {
-			FileUtils.forceDelete(new File(packageLocation));
-		    } catch (IOException e) {
-			// TODO handle exception
-		    }
 
 		    UserContext.getContext().getBusyIPs()
 			    .remove(slaveIpAddress);

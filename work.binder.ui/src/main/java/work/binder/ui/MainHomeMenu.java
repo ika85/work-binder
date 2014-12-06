@@ -86,7 +86,6 @@ public class MainHomeMenu extends VerticalLayout {
 
     }
 
-
     private void addItem(String itemName, Map<String, Command> subItemsData) {
 
 	final MenuBar.MenuItem menuItem = menubar.addItem(itemName, null);
