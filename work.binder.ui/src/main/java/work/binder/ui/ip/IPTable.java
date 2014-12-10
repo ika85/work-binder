@@ -134,7 +134,7 @@ public class IPTable extends LayoutReloadComponent {
 
 		}
 	    });
-	    cancelButton.setEnabled(true);
+	    cancelButton.setEnabled(busy);
 	    cancelButton.setImmediate(true);
 	    cancelButton.setVisible(true);
 
@@ -160,6 +160,10 @@ public class IPTable extends LayoutReloadComponent {
 		boolean available = UserContext.getContext().getAvailableIPs()
 			.containsKey(ipAddress);
 		item.getItemProperty(AVAILABLE).setValue(available);
+
+		((Button) item.getItemProperty(CANCEL).getValue())
+			.setEnabled(busy);
+
 	    }
 	}
     }
