@@ -59,7 +59,7 @@ public class MainHomeMenu extends VerticalLayout {
 			Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP));
 	IPsSelectionForNewJob selectIPsForNewJob = new IPsSelectionForNewJob();
 	PackageSendingProcessor assignJob = new PackageSendingProcessor(
-		selectionJarsForNewJob);
+		selectionJarsForNewJob, selectIPsForNewJob);
 	Command addJobCommand = prepareCommand("Send Package", "650px", "70%",
 		selectionJarsForNewJob, selectIPsForNewJob, assignJob);
 	jobCommands.put("Send Package", addJobCommand);

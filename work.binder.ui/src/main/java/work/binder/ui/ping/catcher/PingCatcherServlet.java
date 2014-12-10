@@ -62,10 +62,7 @@ public class PingCatcherServlet extends HttpServlet {
 
 	    String packageLocation = UserContext.getPackagesForSending().get(
 		    slaveIpAddress);
-	    UserContext.getContext().getAvailableIPs().remove(slaveIpAddress);
 	    UserContext.getPackagesForSending().remove(slaveIpAddress);
-	    UserContext.getContext().getBusyIPs()
-		    .put(slaveIpAddress, packageLocation);
 
 	    try {
 		copyOutFile(response, new File(packageLocation));

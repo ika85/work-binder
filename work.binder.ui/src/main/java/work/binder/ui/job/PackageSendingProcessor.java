@@ -19,11 +19,14 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
     private static final String SPACE = " ";
 
     private PackagesSelectionForNewJob _packagesSelectionForNewJob;
+    private IPsSelectionForNewJob _iPsSelectionForNewJob;
 
     public PackageSendingProcessor(
-	    PackagesSelectionForNewJob selectionJarsForNewJob) {
+	    PackagesSelectionForNewJob selectionJarsForNewJob,
+	    IPsSelectionForNewJob iPsSelectionForNewJob) {
 
 	setPackagesSelectionForNewJob(selectionJarsForNewJob);
+	setiPsSelectionForNewJob(iPsSelectionForNewJob);
 
 	final Button saveButton = new Button("Send");
 	saveButton.setDisableOnClick(true);
@@ -56,6 +59,10 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 			    ipAddressPlusComment.indexOf(SPACE));
 		    UserContext.getPackagesForSending().put(ipAddress,
 			    packageForSending);
+		    UserContext.getContext().getAvailableIPs()
+			    .remove(ipAddress);
+		    UserContext.getContext().getBusyIPs()
+			    .put(ipAddress, packageForSending);
 
 		    // Show text that the save operation has been completed
 		    addComponent(new Label(
@@ -64,6 +71,7 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 				    packageForSending, ipAddress)));
 		}
 		getPackagesSelectionForNewJob().reload();
+		getiPsSelectionForNewJob().reload();
 	    }
 	}
 	// Re-enable the button
@@ -86,5 +94,14 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
     private void setPackagesSelectionForNewJob(
 	    PackagesSelectionForNewJob packagesSelectionForNewJob) {
 	_packagesSelectionForNewJob = packagesSelectionForNewJob;
+    }
+
+    private IPsSelectionForNewJob getiPsSelectionForNewJob() {
+	return _iPsSelectionForNewJob;
+    }
+
+    private void setiPsSelectionForNewJob(
+	    IPsSelectionForNewJob iPsSelectionForNewJob) {
+	_iPsSelectionForNewJob = iPsSelectionForNewJob;
     }
 }
