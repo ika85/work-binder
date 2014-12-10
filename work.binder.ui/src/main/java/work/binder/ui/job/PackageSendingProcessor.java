@@ -30,7 +30,7 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 	saveButton.addListener(this);
 
 	addComponent(saveButton);
-	
+
 	setComponentAlignment(saveButton, Alignment.TOP_RIGHT);
 
     }
@@ -41,24 +41,33 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 	String packageForSending = job.getPackage();
 	// TODO2 + check are package and ipAddress set.
 
-	for (String ipAddressPlusComment : ipAddresses) {
-	    // TODO what if there is already specified IP (with some other job)
+	if (packageForSending == null) {
+	    getWindow().showNotification("Please choose package.");
+	} else {
+	    if (ipAddresses == null) {
+		getWindow().showNotification("Please choose IP Address.");
+	    } else {
+		for (String ipAddressPlusComment : ipAddresses) {
+		    // TODO what if there is already specified IP (with some
+		    // other
+		    // job)
 
-	    String ipAddress = ipAddressPlusComment.substring(0,
-		    ipAddressPlusComment.indexOf(SPACE));
-	    UserContext.getPackagesForSending().put(ipAddress,
-		    packageForSending);
+		    String ipAddress = ipAddressPlusComment.substring(0,
+			    ipAddressPlusComment.indexOf(SPACE));
+		    UserContext.getPackagesForSending().put(ipAddress,
+			    packageForSending);
 
-	    // Show text that the save operation has been completed
-	    addComponent(new Label(
-		    String.format(
-			    "In a few moments package (%s) will be sent to the chosen computer (%s).",
-			    packageForSending, ipAddress)));
+		    // Show text that the save operation has been completed
+		    addComponent(new Label(
+			    String.format(
+				    "In a few moments package (%s) will be sent to the chosen computer (%s).",
+				    packageForSending, ipAddress)));
+		}
+		getPackagesSelectionForNewJob().reload();
+	    }
 	}
 	// Re-enable the button
 	event.getButton().setEnabled(true);
-
-	getPackagesSelectionForNewJob().reload();
 
 	// TODO6 clearing assigned package (zip) and occupied computer (IP)
 	// TODO7 add OK button

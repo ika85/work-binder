@@ -202,20 +202,24 @@ public class Pinger {
 
 	boolean executionSuccessfullyFinished = false;
 
-	for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
+	File tempPackageFile = File.createTempFile(
+		PACKAGE + System.currentTimeMillis(), DOT_ZIP);
 
-	    File slotTempFolder = LocationProcessor.provideBinderFolder(i);
-	    if (slotTempFolder != null) {
-		File packageFile = new File(slotTempFolder, PACKAGE
-			+ System.currentTimeMillis() + DOT_ZIP);
-		if (packageFile.exists()) {
-		    FileUtils.forceDelete(packageFile);
-		}
+	boolean packageReadyForUsing = copyStream(inputStream, tempPackageFile);
 
-		boolean packageReadyForUsing = copyStream(inputStream,
-			packageFile);
+	if (packageReadyForUsing) {
 
-		if (packageReadyForUsing) {
+	    for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
+
+		File slotTempFolder = LocationProcessor.provideBinderFolder(i);
+		if (slotTempFolder != null) {
+		    File packageFile = new File(slotTempFolder, PACKAGE
+			    + System.currentTimeMillis() + DOT_ZIP);
+		    if (packageFile.exists()) {
+			FileUtils.forceDelete(packageFile);
+		    }
+
+		    FileUtils.copyFile(tempPackageFile, packageFile);
 
 		    SlaveContext.setOccupied(true);
 		    SlaveContext.setFinished(false);
@@ -248,6 +252,8 @@ public class Pinger {
 		}
 	    }
 	}
+
+	FileUtils.forceDelete(tempPackageFile);
 	// TODO add what if slotTempFolder == null;
 
 	return executionSuccessfullyFinished;

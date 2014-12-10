@@ -78,7 +78,7 @@ public class MainHomeMenu extends VerticalLayout {
 	Command ipTableAndNewIpCommand = prepareCommand(
 		"Add New Secure IP address", "520px", "70%", ipTable,
 		addNewIPButton);
-	ipCommands.put("Add New Secure IP address", ipTableAndNewIpCommand);
+	ipCommands.put("Add New Secure IP Address", ipTableAndNewIpCommand);
 
 	addItem("IP Adresses", ipCommands);
 

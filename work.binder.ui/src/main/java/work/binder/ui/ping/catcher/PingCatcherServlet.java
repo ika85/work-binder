@@ -82,9 +82,6 @@ public class PingCatcherServlet extends HttpServlet {
 
 		if (FINISHED.equals(jobStatus)) {
 
-		    String packageLocation = UserContext
-			    .getPackagesForSending().get(slaveIpAddress);
-
 		    UserContext.getContext().getBusyIPs()
 			    .remove(slaveIpAddress);
 		    addAvailableIP(params, slaveIpAddress);

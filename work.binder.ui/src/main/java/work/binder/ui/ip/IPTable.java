@@ -1,6 +1,7 @@
 package work.binder.ui.ip;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -115,11 +116,19 @@ public class IPTable extends LayoutReloadComponent {
 			    @SuppressWarnings("unchecked")
 			    Collection<String> selectedItems = (Collection<String>) selectedItemsObj;
 
-			    String selectedItem = selectedItems.iterator()
-				    .next();
+			    Iterator<String> iterator = selectedItems
+				    .iterator();
 
-			    UserContext.getContext().addIPForCanceling(
-				    selectedItem);
+			    if (iterator.hasNext()) {
+				String selectedItem = iterator.next();
+
+				UserContext.getContext().addIPForCanceling(
+					selectedItem);
+			    } else {
+				getWindow()
+					.showNotification(
+						"Please click on the row with IP, which jobs you want to cancel.");
+			    }
 			}
 		    }
 
