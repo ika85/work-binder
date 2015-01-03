@@ -61,6 +61,8 @@ public class PingCatcherServlet extends HttpServlet {
 		    .put(slaveIpAddress, true);
 
 	    response.addHeader(CLEAR, CLEAR);
+	    UserContext.getContext().getIpsForJobClearing()
+		    .remove(slaveIpAddress);
 
 	} else {
 

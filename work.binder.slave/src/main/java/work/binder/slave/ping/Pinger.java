@@ -248,8 +248,8 @@ public class Pinger {
 		    }
 		}
 
-		FileUtils.forceDelete(tempPackageFile);
 	    }
+	    FileUtils.forceDelete(tempPackageFile);
 	}
 
 	// TODO add what if slotTempFolder == null;
