@@ -11,12 +11,11 @@ import org.apache.commons.io.FileUtils;
 
 public class LocationProcessor {
 
-    private static int _slotCount;
+    private static int _processorCount = Runtime.getRuntime()
+	    .availableProcessors();
 
     static {
 	_slots = new HashMap<Integer, File>();
-	_slotCount = Runtime.getRuntime().availableProcessors();
-	createDownloadTempDirs();
 
     }
 
@@ -25,10 +24,9 @@ public class LocationProcessor {
 
     private static Map<Integer, File> _slots;
 
-    private static void createDownloadTempDirs() {
+    protected static void createDownloadTempDirs(int slotCount) {
 
-	int coreCount = getSlotCount();
-	for (int i = 0; i < coreCount; i++) {
+	for (int i = 0; i < slotCount; i++) {
 
 	    try {
 		Path tempPath = Files.createTempDirectory(BINDER_SLAVE + DASH
@@ -46,7 +44,7 @@ public class LocationProcessor {
 
     protected static void deletePackagesOnSlave() {
 
-	for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
+	for (int i = 0; i < LocationProcessor.getProcessorCount(); i++) {
 
 	    File slotTempFolder = LocationProcessor.provideBinderFolder(i);
 	    if (slotTempFolder != null) {
@@ -61,8 +59,8 @@ public class LocationProcessor {
 	}
     }
 
-    protected static int getSlotCount() {
-	return _slotCount;
+    protected static int getProcessorCount() {
+	return _processorCount;
     }
 
     /**
@@ -70,7 +68,6 @@ public class LocationProcessor {
      * */
     // TODO what if the job is done on the one slot but it isn't on the other.
     // Should that available slot be available for the new job?
-    // TODO Should be delete files the job on the slave is done?
     protected static File provideBinderFolder(int i) {
 	return _slots.get(i);
     }

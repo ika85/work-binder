@@ -1,5 +1,6 @@
 package work.binder.ui.job;
 
+import java.util.Iterator;
 import java.util.List;
 
 import work.binder.ui.Package;
@@ -17,6 +18,7 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 
     private static final long serialVersionUID = 7839304209716296708L;
     private static final String SPACE = " ";
+    private static final String COMMA = ",";
 
     private PackagesSelectionForNewJob _packagesSelectionForNewJob;
     private IPsSelectionForNewJob _iPsSelectionForNewJob;
@@ -41,35 +43,48 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
     public void buttonClick(ClickEvent event) {
 	Package job = UserContext.getContext().getJob();
 	List<String> ipAddresses = job.getIpAddresses();
-	String packageForSending = job.getPackage();
+	List<String> packagesForSending = job.getPackages();
 	// TODO2 + check are package and ipAddress set.
 
-	if (packageForSending == null) {
+	if (packagesForSending == null) {
 	    getWindow().showNotification("Please choose package.");
 	} else {
 	    if (ipAddresses == null) {
 		getWindow().showNotification("Please choose IP Address.");
 	    } else {
-		for (String ipAddressPlusComment : ipAddresses) {
+		for (String ipAddressComment : ipAddresses) {
 		    // TODO what if there is already specified IP (with some
 		    // other
 		    // job)
 
-		    String ipAddress = ipAddressPlusComment.substring(0,
-			    ipAddressPlusComment.indexOf(SPACE));
-		    UserContext.getPackagesForSending().put(ipAddress,
-			    packageForSending);
-		    UserContext.getContext().getAvailableIPs()
-			    .remove(ipAddress);
+		    String ip = ipAddressComment.substring(0,
+			    ipAddressComment.indexOf(" "));
+
+		    UserContext.getPackagesForSending().put(ip,
+			    packagesForSending);
+		    UserContext.getContext().getAvailableIPs().remove(ip);
 		    UserContext.getContext().getBusyIPs()
-			    .put(ipAddress, packageForSending);
+			    .put(ip, packagesForSending);
 
 		    // Show text that the save operation has been completed
+
+		    StringBuilder packages = new StringBuilder();
+		    Iterator<String> packageIterator = packagesForSending
+			    .iterator();
+		    while (packageIterator.hasNext()) {
+			packages.append(packageIterator.next());
+			if (packageIterator.hasNext()) {
+			    packages.append(COMMA);
+			    packages.append(SPACE);
+			}
+		    }
+
 		    addComponent(new Label(
 			    String.format(
-				    "In a few moments package (%s) will be sent to the chosen computer (%s).",
-				    packageForSending, ipAddress)));
+				    "In a few moments chosen packages (%s) will be sent to the chosen computer (%s).",
+				    packages, ip)));
 		}
+
 		getPackagesSelectionForNewJob().reload();
 		getiPsSelectionForNewJob().reload();
 	    }

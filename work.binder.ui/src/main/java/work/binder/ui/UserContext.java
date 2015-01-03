@@ -1,6 +1,7 @@
 package work.binder.ui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UserContext {
@@ -15,22 +16,21 @@ public class UserContext {
 	return _userContext;
     }
 
-    public static Map<String, String> getPackagesForSending() {
+    public static Map<String, List<String>> getPackagesForSending() {
 	return _packagesForSending;
     }
 
     public static void setPackagesForSending(
-	    Map<String, String> packagesForSending) {
+	    Map<String, List<String>> packagesForSending) {
 	_packagesForSending = packagesForSending;
     }
 
     private Map<String, Integer> _availableIPs = new HashMap<String, Integer>();
-    private Map<String, String> _busyIPs = new HashMap<String, String>();
-
-    private static Map<String, String> _packagesForSending = new HashMap<String, String>();
-
+    private Map<String, List<String>> _busyIPs = new HashMap<String, List<String>>();
+    private static Map<String, List<String>> _packagesForSending = new HashMap<String, List<String>>();
     // IP + is request for canceling sent?
     private Map<String, Boolean> _ipsForJobCanceling = new HashMap<String, Boolean>();
+    private Map<String, Boolean> _ipsForJobClearing = new HashMap<String, Boolean>();
 
     private UserContext() {
 
@@ -42,16 +42,24 @@ public class UserContext {
 	getIpsForJobCanceling().put(ip, false);
     }
 
+    public void addIPForClearing(String ip) {
+	getIpsForJobClearing().put(ip, false);
+    }
+
     public Map<String, Integer> getAvailableIPs() {
 	return _availableIPs;
     }
 
-    public Map<String, String> getBusyIPs() {
+    public Map<String, List<String>> getBusyIPs() {
 	return _busyIPs;
     }
 
     public Map<String, Boolean> getIpsForJobCanceling() {
 	return _ipsForJobCanceling;
+    }
+
+    public Map<String, Boolean> getIpsForJobClearing() {
+	return _ipsForJobClearing;
     }
 
     public Package getJob() {
@@ -64,6 +72,10 @@ public class UserContext {
 
     public void setIpsForJobCanceling(Map<String, Boolean> ipsForJobCanceling) {
 	_ipsForJobCanceling = ipsForJobCanceling;
+    }
+
+    public void setIpsForJobClearing(Map<String, Boolean> ipsForJobClearing) {
+	_ipsForJobClearing = ipsForJobClearing;
     }
 
     private void setJob(Package job) {

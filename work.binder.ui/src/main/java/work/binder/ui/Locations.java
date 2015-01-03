@@ -8,5 +8,6 @@ public class Locations {
     public static final String UPLOAD_PACKAGE_LOCATION = "uploadedPackages";
 
     public static final String IP_ADRESSES_PROPERTIES_FILE = "configuration/ip.properties";
+    public static final String SLAVE_SLOTS_PROPERTIES_FILE = "configuration/slaveSlots.properties";
 
 }

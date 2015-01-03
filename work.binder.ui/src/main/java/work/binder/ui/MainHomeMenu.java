@@ -23,7 +23,9 @@ import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
+import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Window.CloseListener;
 
 public class MainHomeMenu extends VerticalLayout {
 
@@ -66,19 +68,17 @@ public class MainHomeMenu extends VerticalLayout {
 	addItem("Packages", jobCommands);
 
 	Map<String, Command> ipCommands = new LinkedHashMap<String, MenuBar.Command>();
-	Properties properties = ResourceUtils
+	Properties ipProperties = ResourceUtils
 		.loadIPAdresses(Locations.IP_ADRESSES_PROPERTIES_FILE);
-	IPTable ipTable = new IPTable(properties);
+	Properties slotProperties = ResourceUtils
+		.loadIPAdresses(Locations.SLAVE_SLOTS_PROPERTIES_FILE);
+	IPTable ipTable = new IPTable(ipProperties, slotProperties);
 
-	Command ipTableCommand = prepareCommand("Show All Secure IP Addresses",
-		"520px", "70%", ipTable);
-	ipCommands.put("Show All Secure IP Addresses", ipTableCommand);
-
-	AddNewIP addNewIPButton = new AddNewIP(ipTable, properties);
-	Command ipTableAndNewIpCommand = prepareCommand(
-		"Add New Secure IP address", "520px", "70%", ipTable,
-		addNewIPButton);
-	ipCommands.put("Add New Secure IP Address", ipTableAndNewIpCommand);
+	AddNewIP addNewIPButton = new AddNewIP(ipTable, ipProperties,
+		slotProperties);
+	Command ipTableAndNewIpCommand = prepareCommand("Slaves Status",
+		"830px", "80%", ipTable, addNewIPButton);
+	ipCommands.put("Slaves Status", ipTableAndNewIpCommand);
 
 	addItem("IP Adresses", ipCommands);
 
@@ -149,6 +149,19 @@ public class MainHomeMenu extends VerticalLayout {
 
 		Button closeButton = prepareCloseButton(subwindow);
 		subwindow.addComponent(closeButton);
+
+		subwindow.addListener(new CloseListener() {
+
+		    /**
+		     * 
+		     */
+		    private static final long serialVersionUID = 2741339792445983680L;
+
+		    public void windowClose(CloseEvent e) {
+			// TODO Auto-generated method stub
+
+		    }
+		});
 
 		layout.setComponentAlignment(closeButton, Alignment.TOP_RIGHT);
 		layout.setSizeFull();

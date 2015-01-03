@@ -44,7 +44,7 @@ public class IPsSelectionForNewJob extends LayoutReloadComponent {
 	l.setMultiSelect(true);
 	l.setImmediate(true);
 	l.setLeftColumnCaption("Available IPs");
-	l.setRightColumnCaption("Choosen IPs for a new job");
+	l.setRightColumnCaption("Slaves which will process chosen packages");
 	l.setWidth("600px");
 
 	l.addListener(new Property.ValueChangeListener() {
@@ -90,13 +90,19 @@ public class IPsSelectionForNewJob extends LayoutReloadComponent {
     private void addItems(Map<String, Integer> availableIPs) {
 
 	for (String item : availableIPs.keySet()) {
-	    String comment = _allSecureIPAddresses.get(item).toString();
-	    if (StringUtils.isEmpty(comment)) {
+	    Object commentObj = _allSecureIPAddresses.get(item);
+	    if (commentObj == null) {
 		l.addItem(String.format("%s", item));
 	    } else {
-		l.addItem(String.format("%s (%s; slot count: %d)", item,
-			comment, availableIPs.get(item)));
+		String comment = commentObj.toString();
+		if (StringUtils.isEmpty(comment)) {
+		    l.addItem(String.format("%s", item));
+		} else {
+		    l.addItem(String.format("%s (%s; slot count: %d)", item,
+			    comment, availableIPs.get(item)));
+		}
 	    }
+
 	}
     }
 }

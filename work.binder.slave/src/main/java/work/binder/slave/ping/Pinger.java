@@ -23,33 +23,36 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
+//TODO create service from Pinger; immediate=true, activate - ping();
 public class Pinger {
 
     private static Log LOG = LogFactory.getLog(Pinger.class);
     private static final String PACKAGE = "package";
     private static final String DOT_ZIP = ".zip";
-    private static final String SLOT_COUNT = "slotCount";
+    private static final String PROCESSOR_COUNT = "processorCount";
     private static final String EXECUTION = "execution";
     private static final String IN_PROGRESS = "In Progress";
     private static final String FINISHED = "Finished";
     private static final String CANCEL = "cancel";
     private static final String CANCELED = "canceled";
-
     private static final String TASKLIST = "tasklist";
+    private static final String CLEAR = "clear";
 
-    public static boolean copyStream(InputStream input, File packageFile)
-	    throws IOException {
+    public static File copyStream(InputStream input) throws IOException {
 
 	OutputStream outputStream = null;
-
-	boolean streamNotEmpty = false;
+	File tempPackageFile = null;
 
 	byte[] buffer = new byte[1024];
 	int bytesRead;
 	while ((bytesRead = input.read(buffer)) != -1) {
-	    streamNotEmpty = true;
 	    if (outputStream == null) {
-		outputStream = new FileOutputStream(packageFile);
+		if (tempPackageFile == null) {
+
+		    tempPackageFile = File.createTempFile(
+			    PACKAGE + System.currentTimeMillis(), DOT_ZIP);
+		}
+		outputStream = new FileOutputStream(tempPackageFile);
 	    }
 	    outputStream.write(buffer, 0, bytesRead);
 	}
@@ -58,7 +61,7 @@ public class Pinger {
 	    outputStream.close();
 	}
 
-	return streamNotEmpty;
+	return tempPackageFile;
     }
 
     public static String isProcessRunning(String serviceName) {
@@ -99,20 +102,11 @@ public class Pinger {
 
 	    if (SlaveContext.isOccupied()) {
 
-		if (SlaveContext.isFinished()) {
-		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
-			    FINISHED));
-		    SlaveContext.setOccupied(false);
-		    LocationProcessor.deletePackagesOnSlave();
-
-		} else {
-
-		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
-			    IN_PROGRESS));
-		}
+		nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			IN_PROGRESS));
 	    } else {
-		nameValuePairs.add(new BasicNameValuePair(SLOT_COUNT, ""
-			+ LocationProcessor.getSlotCount()));
+		nameValuePairs.add(new BasicNameValuePair(PROCESSOR_COUNT, ""
+			+ LocationProcessor.getProcessorCount()));
 	    }
 
 	    post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -120,69 +114,80 @@ public class Pinger {
 	    try {
 		HttpResponse response = client.execute(post);
 
-		Header[] headers = response.getHeaders(CANCEL);
-
-		boolean continueWithWork = true;
-
+		Header[] headers = response.getHeaders(CLEAR);
 		if (headers != null && headers.length > 0) {
 		    Header header = headers[0];
 		    String headerName = header.getName();
 
-		    if (CANCEL.equals(headerName)) {
-			continueWithWork = false;
-			if (SlaveContext.isOccupied()
-				&& !SlaveContext.isFinished()) {
-			    List<ProcessData> processes = SlaveContext
-				    .getProcesses();
+		    if (CLEAR.equals(headerName)) {
+			LocationProcessor.deletePackagesOnSlave();
+			SlaveContext.setOccupied(false);
+			nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+				FINISHED));
+		    }
+		} else {
 
-			    for (ProcessData processData : processes) {
+		    headers = response.getHeaders(CANCEL);
 
-				Process process = processData.getProcess();
-				if (process != null) {
-				    // TODO kill win/linux... process, not just
-				    // java
-				    process.destroy();
+		    boolean continueWithWork = true;
 
-				    // String processName =
-				    // java.lang.management.ManagementFactory
-				    // .getRuntimeMXBean().getName();
-				    // Long pid = Long.parseLong(processName
-				    // .split("@")[0]);
+		    if (headers != null && headers.length > 0) {
+			Header header = headers[0];
+			String headerName = header.getName();
 
-				    String serviceId = isProcessRunning(processData
-					    .getServiceName());
+			if (CANCEL.equals(headerName)) {
+			    continueWithWork = false;
+			    if (SlaveContext.isOccupied()) {
+				List<ProcessData> processes = SlaveContext
+					.getProcesses();
 
-				    if (serviceId != null) {
-					// windows solution, check linux & mac
-					Runtime.getRuntime()
-						.exec("taskkill /f /pid "
-							+ serviceId);
+				for (ProcessData processData : processes) {
+
+				    Process process = processData.getProcess();
+				    if (process != null) {
+					// TODO kill win/linux... process, not
+					// just
+					// java
+					process.destroy();
+
+					// String processName =
+					// java.lang.management.ManagementFactory
+					// .getRuntimeMXBean().getName();
+					// Long pid = Long.parseLong(processName
+					// .split("@")[0]);
+
+					String serviceId = isProcessRunning(processData
+						.getServiceName());
+
+					if (serviceId != null) {
+					    // windows solution, check linux &
+					    // mac
+					    Runtime.getRuntime().exec(
+						    "taskkill /f /pid "
+							    + serviceId);
+					}
+					// what if execution isn't cancelled for
+					// some
+					// reason
+
+					nameValuePairs
+						.add(new BasicNameValuePair(
+							EXECUTION, CANCELED));
+					SlaveContext.setOccupied(false);
 				    }
-				    // what if execution isn't cancelled for
-				    // some
-				    // reason
-
-				    nameValuePairs.add(new BasicNameValuePair(
-					    EXECUTION, CANCELED));
-				    SlaveContext.setFinished(true);
-				    SlaveContext.setOccupied(false);
 				}
-			    }
 
+			    }
 			}
 		    }
-		}
 
-		if (continueWithWork) {
-		    InputStream inputStream = response.getEntity().getContent();
+		    if (continueWithWork) {
+			InputStream inputStream = response.getEntity()
+				.getContent();
 
-		    boolean executionSuccessfullyFinished = executeIfThereIsSomething(inputStream);
-
-		    if (executionSuccessfullyFinished) {
-			SlaveContext.setFinished(true);
+			executeIfThereIsSomething(inputStream);
 
 		    }
-
 		}
 	    } catch (ConnectException e) {
 		LOG.error("There is a problem with a connection to the Master computer. Maybe application on the Master computer hasn't been started.");
@@ -197,65 +202,57 @@ public class Pinger {
     // master could set estimates for the job; if the job isn't done in the
     // expected period; master could abort the job, and send the job to some
     // other slave
-    private static boolean executeIfThereIsSomething(InputStream inputStream)
+    private static void executeIfThereIsSomething(InputStream inputStream)
 	    throws IOException {
 
-	boolean executionSuccessfullyFinished = false;
+	File tempPackageFile = copyStream(inputStream);
 
-	File tempPackageFile = File.createTempFile(
-		PACKAGE + System.currentTimeMillis(), DOT_ZIP);
+	if (tempPackageFile != null) {
 
-	boolean packageReadyForUsing = copyStream(inputStream, tempPackageFile);
+	    // TODO slot instead of processor count
+	    LocationProcessor.createDownloadTempDirs(LocationProcessor
+		    .getProcessorCount());
 
-	if (packageReadyForUsing) {
-
-	    for (int i = 0; i < LocationProcessor.getSlotCount(); i++) {
+	    for (int i = 0; i < LocationProcessor.getProcessorCount(); i++) {
 
 		File slotTempFolder = LocationProcessor.provideBinderFolder(i);
 		if (slotTempFolder != null) {
 		    File packageFile = new File(slotTempFolder, PACKAGE
 			    + System.currentTimeMillis() + DOT_ZIP);
-		    if (packageFile.exists()) {
-			FileUtils.forceDelete(packageFile);
-		    }
 
 		    FileUtils.copyFile(tempPackageFile, packageFile);
 
 		    SlaveContext.setOccupied(true);
-		    SlaveContext.setFinished(false);
 
-		    String exeFilePath = UnzipUtils.unzip(packageFile,
-			    packageFile.getParent());
+		    File folderWithPackages = new File(slotTempFolder, PACKAGE
+			    + System.currentTimeMillis());
 
-		    String fileName = new File(exeFilePath).getName();
-		    // add switch for sh file
-		    Process process = Runtime.getRuntime().exec(exeFilePath);
+		    FileUtils.forceMkdir(folderWithPackages);
+		    UnzipUtils.unzip(packageFile,
+			    folderWithPackages.getAbsolutePath());
 
-		    ProcessData processData = new ProcessData();
-		    processData.setProcess(process);
-		    processData.setServiceName(fileName);
+		    for (File packages : folderWithPackages.listFiles()) {
+			String exeFilePath = UnzipUtils.unzip(packages,
+				packages.getParent());
 
-		    SlaveContext.getProcesses().add(processData);
-		    try {
-			int processEnded = process.waitFor();
+			String fileName = new File(exeFilePath).getName();
+			// add switch for sh file
+			Process process = Runtime.getRuntime()
+				.exec(exeFilePath);
 
-			executionSuccessfullyFinished = processEnded == 0;
+			ProcessData processData = new ProcessData();
+			processData.setProcess(process);
+			processData.setServiceName(fileName);
 
-			// what if there is some problem during execution of
-			// Main
-			// class from specified jar?
-
-		    } catch (InterruptedException e) {
-			e.printStackTrace();
+			SlaveContext.getProcesses().add(processData);
 		    }
-
 		}
+
+		FileUtils.forceDelete(tempPackageFile);
 	    }
 	}
 
-	FileUtils.forceDelete(tempPackageFile);
 	// TODO add what if slotTempFolder == null;
 
-	return executionSuccessfullyFinished;
     }
 }

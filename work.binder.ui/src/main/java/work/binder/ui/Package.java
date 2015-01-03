@@ -1,25 +1,31 @@
 package work.binder.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Package {
 
-    private String _package;
+    private List<String> _packages;
     private List<String> _ipAddresses;
 
     public List<String> getIpAddresses() {
 	return _ipAddresses;
     }
 
-    public String getPackage() {
-	return _package;
+    public Package() {
+	setPackage(new ArrayList<String>());
+	setIpAddresses(new ArrayList<String>());
+    }
+
+    public List<String> getPackages() {
+	return _packages;
     }
 
     public void setIpAddresses(List<String> ipAddresses) {
 	_ipAddresses = ipAddresses;
     }
 
-    public void setPackage(String packageForSending) {
-	_package = packageForSending;
+    public void setPackage(List<String> packagesForSending) {
+	_packages = packagesForSending;
     }
 }

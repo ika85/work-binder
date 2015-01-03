@@ -35,8 +35,8 @@ public class PackagesSelectionForNewJob extends LayoutReloadComponent {
 	l.setNullSelectionAllowed(true);
 	l.setMultiSelect(true);
 	l.setImmediate(true);
-	l.setLeftColumnCaption("Unassigned jars");
-	l.setRightColumnCaption("Choosen jars for a new job");
+	l.setLeftColumnCaption("Available Packages");
+	l.setRightColumnCaption("Packages which will be sent to the slaves");
 	l.setWidth("600px");
 
 	l.addListener(new Property.ValueChangeListener() {
@@ -52,9 +52,9 @@ public class PackagesSelectionForNewJob extends LayoutReloadComponent {
 		if (iterator.hasNext()) {
 		    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION,
 			    iterator.next().toString());
-		    // TODO4 what if there is more than one jar
-		    UserContext.getContext().getJob()
-			    .setPackage(jarFile.getAbsolutePath());
+
+		    UserContext.getContext().getJob().getPackages()
+			    .add(jarFile.getAbsolutePath());
 		}
 	    }
 	});
@@ -68,9 +68,10 @@ public class PackagesSelectionForNewJob extends LayoutReloadComponent {
 	List<String> packageList = ResourceUtils.providePrepararedPackages(
 		Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP);
 
-	Map<String, String> futureJobs = UserContext.getPackagesForSending();
+	Map<String, List<String>> futureJobs = UserContext
+		.getPackagesForSending();
 
-	Collection<String> assignedPackages = futureJobs.values();
+	Collection<List<String>> assignedPackages = futureJobs.values();
 
 	List<String> notAssignedPackages = new ArrayList<String>();
 

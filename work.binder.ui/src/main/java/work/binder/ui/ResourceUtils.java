@@ -17,19 +17,22 @@ public class ResourceUtils {
 
 	Properties properties = new Properties();
 	// TODO this should not be done every time!
-	InputStream inputStream;
-	try {
-	    inputStream = new FileInputStream(filePath);
+
+	if (new File(filePath).exists()) {
+	    InputStream inputStream;
 	    try {
-		properties.load(inputStream);
+		inputStream = new FileInputStream(filePath);
+		try {
+		    properties.load(inputStream);
+		} catch (IOException e) {
+		    // TODO throw own exception
+		}
+		inputStream.close();
+	    } catch (FileNotFoundException e) {
+		// TODO throw own exception
 	    } catch (IOException e) {
 		// TODO throw own exception
 	    }
-	    inputStream.close();
-	} catch (FileNotFoundException e) {
-	    // TODO throw own exception
-	} catch (IOException e) {
-	    // TODO throw own exception
 	}
 	return properties;
     }
