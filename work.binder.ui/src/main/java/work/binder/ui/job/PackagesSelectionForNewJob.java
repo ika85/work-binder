@@ -10,6 +10,7 @@ import java.util.Map;
 import work.binder.ui.Constants;
 import work.binder.ui.LayoutReloadComponent;
 import work.binder.ui.Locations;
+import work.binder.ui.PackageData;
 import work.binder.ui.ResourceUtils;
 import work.binder.ui.UserContext;
 
@@ -68,16 +69,24 @@ public class PackagesSelectionForNewJob extends LayoutReloadComponent {
 	List<String> packageList = ResourceUtils.providePrepararedPackages(
 		Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP);
 
-	Map<String, List<String>> futureJobs = UserContext
+	Map<String, PackageData> futureJobs = UserContext.getContext()
 		.getPackagesForSending();
 
-	Collection<List<String>> assignedPackages = futureJobs.values();
+	Collection<PackageData> assignedPackages = futureJobs.values();
 
 	List<String> notAssignedPackages = new ArrayList<String>();
 
 	for (String jar : packageList) {
 	    File jarFile = new File(Locations.UPLOAD_PACKAGE_LOCATION, jar);
-	    if (!assignedPackages.contains(jarFile.getAbsolutePath())) {
+	    boolean notAssigned = true;
+	    for (PackageData packageData : assignedPackages) {
+		if (packageData.getPackages().contains(
+			jarFile.getAbsolutePath())) {
+		    notAssigned = false;
+		    break;
+		}
+	    }
+	    if (notAssigned) {
 		notAssignedPackages.add(jar);
 	    }
 	}

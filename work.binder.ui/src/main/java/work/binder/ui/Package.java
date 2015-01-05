@@ -8,13 +8,13 @@ public class Package {
     private List<String> _packages;
     private List<String> _ipAddresses;
 
-    public List<String> getIpAddresses() {
-	return _ipAddresses;
-    }
-
     public Package() {
 	setPackage(new ArrayList<String>());
 	setIpAddresses(new ArrayList<String>());
+    }
+
+    public List<String> getIpAddresses() {
+	return _ipAddresses;
     }
 
     public List<String> getPackages() {

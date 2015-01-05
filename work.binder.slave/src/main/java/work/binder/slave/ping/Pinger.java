@@ -37,6 +37,7 @@ public class Pinger {
     private static final String CANCELED = "canceled";
     private static final String TASKLIST = "tasklist";
     private static final String CLEAR = "clear";
+    private static final String PACKAGE_COMMAND = "packageCommand";
 
     public static File copyStream(InputStream input) throws IOException {
 
@@ -102,8 +103,22 @@ public class Pinger {
 
 	    if (SlaveContext.isOccupied()) {
 
-		nameValuePairs.add(new BasicNameValuePair(EXECUTION,
-			IN_PROGRESS));
+		if (SlaveContext.isCleared()) {
+		    SlaveContext.setCleared(false);
+		    SlaveContext.setOccupied(false);
+		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			    FINISHED));
+		} else if (SlaveContext.isCanceled()) {
+		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			    CANCELED));
+		    SlaveContext.setCanceled(false);
+		    SlaveContext.setOccupied(false);
+
+		} else {
+
+		    nameValuePairs.add(new BasicNameValuePair(EXECUTION,
+			    IN_PROGRESS));
+		}
 	    } else {
 		nameValuePairs.add(new BasicNameValuePair(PROCESSOR_COUNT, ""
 			+ LocationProcessor.getProcessorCount()));
@@ -121,9 +136,7 @@ public class Pinger {
 
 		    if (CLEAR.equals(headerName)) {
 			LocationProcessor.deletePackagesOnSlave();
-			SlaveContext.setOccupied(false);
-			nameValuePairs.add(new BasicNameValuePair(EXECUTION,
-				FINISHED));
+			SlaveContext.setCleared(true);
 		    }
 		} else {
 
@@ -139,7 +152,7 @@ public class Pinger {
 			    continueWithWork = false;
 			    if (SlaveContext.isOccupied()) {
 				List<ProcessData> processes = SlaveContext
-					.getProcesses();
+					.getProcessesData();
 
 				for (ProcessData processData : processes) {
 
@@ -170,10 +183,7 @@ public class Pinger {
 					// some
 					// reason
 
-					nameValuePairs
-						.add(new BasicNameValuePair(
-							EXECUTION, CANCELED));
-					SlaveContext.setOccupied(false);
+					SlaveContext.setCanceled(true);
 				    }
 				}
 
@@ -185,7 +195,9 @@ public class Pinger {
 			InputStream inputStream = response.getEntity()
 				.getContent();
 
-			executeIfThereIsSomething(inputStream);
+			String packageCommand = providePackageCommand(response);
+
+			executeIfThereIsSomething(inputStream, packageCommand);
 
 		    }
 		}
@@ -202,8 +214,8 @@ public class Pinger {
     // master could set estimates for the job; if the job isn't done in the
     // expected period; master could abort the job, and send the job to some
     // other slave
-    private static void executeIfThereIsSomething(InputStream inputStream)
-	    throws IOException {
+    private static void executeIfThereIsSomething(InputStream inputStream,
+	    String packageCommand) throws IOException {
 
 	File tempPackageFile = copyStream(inputStream);
 
@@ -235,16 +247,17 @@ public class Pinger {
 			String exeFilePath = UnzipUtils.unzip(packages,
 				packages.getParent());
 
+			// check cancel after these changes
 			String fileName = new File(exeFilePath).getName();
-			// add switch for sh file
-			Process process = Runtime.getRuntime()
-				.exec(exeFilePath);
+
+			Process process = Runtime.getRuntime().exec(
+				packageCommand);
 
 			ProcessData processData = new ProcessData();
 			processData.setProcess(process);
 			processData.setServiceName(fileName);
 
-			SlaveContext.getProcesses().add(processData);
+			SlaveContext.getProcessesData().add(processData);
 		    }
 		}
 
@@ -254,5 +267,22 @@ public class Pinger {
 
 	// TODO add what if slotTempFolder == null;
 
+    }
+
+    private static String providePackageCommand(HttpResponse response) {
+
+	String command = "";
+	Header[] headers = response.getHeaders(PACKAGE_COMMAND);
+
+	if (headers != null && headers.length > 0) {
+	    Header header = headers[0];
+	    String headerName = header.getName();
+
+	    if (PACKAGE_COMMAND.equals(headerName)) {
+		command = header.getValue();
+	    }
+	}
+
+	return command;
     }
 }

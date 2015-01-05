@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import work.binder.ui.Locations;
+import work.binder.ui.PackageData;
 import work.binder.ui.UserContext;
 
 public class PingCatcherServlet extends HttpServlet {
@@ -31,6 +32,7 @@ public class PingCatcherServlet extends HttpServlet {
     private static final String FORWARD_FOR = "X-FORWARDED-FOR";
     private static final String PROCESSOR_COUNT = "processorCount";
     private static final String CANCEL = "cancel";
+    private static final String PACKAGE_COMMAND = "packageCommand";
     private static final String CANCELED = "canceled";
     private static final String ZIPPED_PACKAGES = "zippedPackages";
     private static final String CLEAR = "clear";
@@ -76,12 +78,14 @@ public class PingCatcherServlet extends HttpServlet {
 
 		    response.addHeader(CANCEL, null);
 		}
-	    } else if (UserContext.getPackagesForSending().containsKey(
-		    slaveIpAddress)) {
+	    } else if (UserContext.getContext().getPackagesForSending()
+		    .containsKey(slaveIpAddress)) {
 
-		List<String> packageLocations = UserContext
+		PackageData packageData = UserContext.getContext()
 			.getPackagesForSending().get(slaveIpAddress);
-		UserContext.getPackagesForSending().remove(slaveIpAddress);
+		List<String> packageLocations = packageData.getPackages();
+		UserContext.getContext().getPackagesForSending()
+			.remove(slaveIpAddress);
 
 		try {
 
@@ -94,6 +98,8 @@ public class PingCatcherServlet extends HttpServlet {
 		    if (done) {
 			copyOutFile(response, new File(zippedPackages));
 			FileUtils.forceDelete(zipLocation);
+			response.addHeader(PACKAGE_COMMAND,
+				packageData.getCommand());
 		    } else {
 			// add appropriate exception
 		    }

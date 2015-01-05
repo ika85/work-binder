@@ -16,20 +16,66 @@ import work.binder.ui.job.PackageSendingProcessor;
 import work.binder.ui.job.IPsSelectionForNewJob;
 import work.binder.ui.job.PackagesSelectionForNewJob;
 
+import com.vaadin.data.Property;
+import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.MenuBar;
-import com.vaadin.ui.Window;
+import com.vaadin.ui.TextArea;
 import com.vaadin.ui.MenuBar.Command;
 import com.vaadin.ui.MenuBar.MenuItem;
+import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window.CloseListener;
 
 public class MainHomeMenu extends VerticalLayout {
 
+    private class PackageCommands extends LayoutReloadComponent {
+
+	private static final long serialVersionUID = 4035499611555525481L;
+
+	@Override
+	public void reload() {
+	    // TODO Auto-generated method stub
+	    TextArea commandsForPackages = new TextArea(
+		    "Please enter every new command for the slaves in the new line.");
+	    commandsForPackages.setWidth("600");
+
+	    commandsForPackages.addListener(new Property.ValueChangeListener() {
+		private static final long serialVersionUID = 1481325013041936602L;
+
+		public void valueChange(ValueChangeEvent event) {
+		    String commandsString = (String) event.getProperty()
+			    .getValue();
+		    String[] commands = commandsString.split("\n");
+
+		    Map<String, PackageData> packagesForSendingMap = UserContext
+			    .getContext().getPackagesForSending();
+
+		    // TODO add handling: what if there is less commands than it
+		    // should be
+		    int i = 0;
+		    for (String ip : packagesForSendingMap.keySet()) {
+
+			PackageData packageData = packagesForSendingMap.get(ip);
+			if (packageData == null) {
+			    packageData = new PackageData();
+			    packagesForSendingMap.put(ip, packageData);
+			}
+			packageData.setCommand(commands[i++]);
+		    }
+		}
+	    });
+	    commandsForPackages.setImmediate(true);
+
+	    addComponent(commandsForPackages);
+
+	}
+    }
     private static final long serialVersionUID = -1087618745131764334L;
+
     private MenuBar menubar = new MenuBar();
 
     static {
@@ -60,10 +106,12 @@ public class MainHomeMenu extends VerticalLayout {
 		ResourceUtils.providePrepararedPackages(
 			Locations.UPLOAD_PACKAGE_LOCATION, Constants.DOT_ZIP));
 	IPsSelectionForNewJob selectIPsForNewJob = new IPsSelectionForNewJob();
+	PackageCommands commandsForPackages = new PackageCommands();
 	PackageSendingProcessor assignJob = new PackageSendingProcessor(
 		selectionJarsForNewJob, selectIPsForNewJob);
-	Command addJobCommand = prepareCommand("Send Package", "650px", "70%",
-		selectionJarsForNewJob, selectIPsForNewJob, assignJob);
+	Command addJobCommand = prepareCommand("Send Package", "650px", "95%",
+		selectionJarsForNewJob, selectIPsForNewJob,
+		commandsForPackages, assignJob);
 	jobCommands.put("Send Package", addJobCommand);
 	addItem("Packages", jobCommands);
 

@@ -150,6 +150,10 @@ public class IPTable extends LayoutReloadComponent {
 	return item;
     }
 
+    private Properties getIpProperties() {
+	return _ipProperties;
+    }
+
     private Properties getSlotProperties() {
 	return _slotProperties;
     }
@@ -266,6 +270,29 @@ public class IPTable extends LayoutReloadComponent {
 	};
     }
 
+    private void setIpProperties(Properties ipProperties) {
+	_ipProperties = ipProperties;
+    }
+
+    private void setSlotCount(Item item, String ipAddress) {
+
+	Object slotObj = getSlotProperties().get(ipAddress);
+
+	String slotCount;
+	if (slotObj != null) {
+	    slotCount = slotObj.toString();
+	} else {
+	    slotCount = StringUtils.EMPTY;
+	}
+
+	TextField textField = new TextField();
+	textField.setValue(slotCount);
+	textField.setWidth("80");
+	textField.addListener(provideSlotTextFieldListener());
+	textField.setImmediate(true);
+	item.getItemProperty(SLOTS).setValue(textField);
+    }
+
     private void setSlotProperties(Properties slotProperties) {
 	_slotProperties = slotProperties;
     }
@@ -299,25 +326,6 @@ public class IPTable extends LayoutReloadComponent {
 		e1.printStackTrace();
 	    }
 	}
-    }
-
-    private void setSlotCount(Item item, String ipAddress) {
-
-	Object slotObj = getSlotProperties().get(ipAddress);
-
-	String slotCount;
-	if (slotObj != null) {
-	    slotCount = slotObj.toString();
-	} else {
-	    slotCount = StringUtils.EMPTY;
-	}
-
-	TextField textField = new TextField();
-	textField.setValue(slotCount);
-	textField.setWidth("80");
-	textField.addListener(provideSlotTextFieldListener());
-	textField.setImmediate(true);
-	item.getItemProperty(SLOTS).setValue(textField);
     }
 
     protected void fillContainerDataSource(IndexedContainer container,
@@ -385,13 +393,5 @@ public class IPTable extends LayoutReloadComponent {
 
 	container.sort(new Object[] { IP_ADDRESS }, new boolean[] { true });
 	return container;
-    }
-
-    private Properties getIpProperties() {
-	return _ipProperties;
-    }
-
-    private void setIpProperties(Properties ipProperties) {
-	_ipProperties = ipProperties;
     }
 }

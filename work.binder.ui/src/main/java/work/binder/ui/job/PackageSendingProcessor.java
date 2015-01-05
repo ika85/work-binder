@@ -5,6 +5,7 @@ import java.util.List;
 
 import work.binder.ui.Package;
 import work.binder.ui.LayoutReloadComponent;
+import work.binder.ui.PackageData;
 import work.binder.ui.UserContext;
 
 import com.vaadin.ui.Alignment;
@@ -60,8 +61,14 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 		    String ip = ipAddressComment.substring(0,
 			    ipAddressComment.indexOf(" "));
 
-		    UserContext.getPackagesForSending().put(ip,
-			    packagesForSending);
+		    PackageData packageData = UserContext.getContext()
+			    .getPackagesForSending().get(ip);
+		    if (packageData == null) {
+			packageData = new PackageData();
+			UserContext.getContext().getPackagesForSending()
+				.put(ip, packageData);
+		    }
+		    packageData.setPackages(packagesForSending);
 		    UserContext.getContext().getAvailableIPs().remove(ip);
 		    UserContext.getContext().getBusyIPs()
 			    .put(ip, packagesForSending);
@@ -102,21 +109,21 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 
     }
 
-    private PackagesSelectionForNewJob getPackagesSelectionForNewJob() {
-	return _packagesSelectionForNewJob;
-    }
-
-    private void setPackagesSelectionForNewJob(
-	    PackagesSelectionForNewJob packagesSelectionForNewJob) {
-	_packagesSelectionForNewJob = packagesSelectionForNewJob;
-    }
-
     private IPsSelectionForNewJob getiPsSelectionForNewJob() {
 	return _iPsSelectionForNewJob;
+    }
+
+    private PackagesSelectionForNewJob getPackagesSelectionForNewJob() {
+	return _packagesSelectionForNewJob;
     }
 
     private void setiPsSelectionForNewJob(
 	    IPsSelectionForNewJob iPsSelectionForNewJob) {
 	_iPsSelectionForNewJob = iPsSelectionForNewJob;
+    }
+
+    private void setPackagesSelectionForNewJob(
+	    PackagesSelectionForNewJob packagesSelectionForNewJob) {
+	_packagesSelectionForNewJob = packagesSelectionForNewJob;
     }
 }
