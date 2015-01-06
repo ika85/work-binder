@@ -30,6 +30,7 @@ public class Pinger {
     private static final String PACKAGE = "package";
     private static final String DOT_ZIP = ".zip";
     private static final String PROCESSOR_COUNT = "processorCount";
+    private static final String SLOT_COUNT = "slotCount";
     private static final String EXECUTION = "execution";
     private static final String IN_PROGRESS = "In Progress";
     private static final String FINISHED = "Finished";
@@ -195,9 +196,17 @@ public class Pinger {
 			InputStream inputStream = response.getEntity()
 				.getContent();
 
-			String packageCommand = providePackageCommand(response);
+			String packageCommand = provideHeaderValue(response,
+				PACKAGE_COMMAND);
 
-			executeIfThereIsSomething(inputStream, packageCommand);
+			String slotCountString = provideHeaderValue(response,
+				SLOT_COUNT);
+
+			if (!"".equals(slotCountString)) {
+			    int slotCount = Integer.valueOf(slotCountString);
+			    executeIfThereIsSomething(inputStream,
+				    packageCommand, slotCount);
+			}
 
 		    }
 		}
@@ -215,17 +224,16 @@ public class Pinger {
     // expected period; master could abort the job, and send the job to some
     // other slave
     private static void executeIfThereIsSomething(InputStream inputStream,
-	    String packageCommand) throws IOException {
+	    String packageCommand, int slotCount) throws IOException {
 
 	File tempPackageFile = copyStream(inputStream);
 
 	if (tempPackageFile != null) {
 
 	    // TODO slot instead of processor count
-	    LocationProcessor.createDownloadTempDirs(LocationProcessor
-		    .getProcessorCount());
+	    LocationProcessor.createDownloadTempDirs(slotCount);
 
-	    for (int i = 0; i < LocationProcessor.getProcessorCount(); i++) {
+	    for (int i = 0; i < slotCount; i++) {
 
 		File slotTempFolder = LocationProcessor.provideBinderFolder(i);
 		if (slotTempFolder != null) {
@@ -250,14 +258,14 @@ public class Pinger {
 			// check cancel after these changes
 			String fileName = new File(exeFilePath).getName();
 
-			Process process = Runtime.getRuntime().exec(
-				packageCommand);
-
-			ProcessData processData = new ProcessData();
-			processData.setProcess(process);
-			processData.setServiceName(fileName);
-
-			SlaveContext.getProcessesData().add(processData);
+			 Process process = Runtime.getRuntime().exec(
+			 packageCommand);
+			
+			 ProcessData processData = new ProcessData();
+			 processData.setProcess(process);
+			 processData.setServiceName(fileName);
+			
+			 SlaveContext.getProcessesData().add(processData);
 		    }
 		}
 
@@ -269,20 +277,21 @@ public class Pinger {
 
     }
 
-    private static String providePackageCommand(HttpResponse response) {
+    private static String provideHeaderValue(HttpResponse response,
+	    String specifiedHeaderName) {
 
-	String command = "";
-	Header[] headers = response.getHeaders(PACKAGE_COMMAND);
+	String headerValue = "";
+	Header[] headers = response.getHeaders(specifiedHeaderName);
 
 	if (headers != null && headers.length > 0) {
 	    Header header = headers[0];
 	    String headerName = header.getName();
 
-	    if (PACKAGE_COMMAND.equals(headerName)) {
-		command = header.getValue();
+	    if (specifiedHeaderName.equals(headerName)) {
+		headerValue = header.getValue();
 	    }
 	}
 
-	return command;
+	return headerValue;
     }
 }
