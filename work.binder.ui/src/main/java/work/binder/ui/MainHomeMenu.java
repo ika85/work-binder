@@ -3,6 +3,7 @@ package work.binder.ui;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -16,8 +17,8 @@ import work.binder.ui.job.PackageSendingProcessor;
 import work.binder.ui.job.IPsSelectionForNewJob;
 import work.binder.ui.job.PackagesSelectionForNewJob;
 
-import com.vaadin.data.Property;
-import com.vaadin.data.Property.ValueChangeEvent;
+import com.vaadin.event.FieldEvents;
+import com.vaadin.event.FieldEvents.TextChangeEvent;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -43,37 +44,48 @@ public class MainHomeMenu extends VerticalLayout {
 		    "Please enter every new command for the slaves in the new line.");
 	    commandsForPackages.setWidth("600");
 
-	    commandsForPackages.addListener(new Property.ValueChangeListener() {
-		private static final long serialVersionUID = 1481325013041936602L;
+	    commandsForPackages
+		    .addListener(new FieldEvents.TextChangeListener() {
 
-		public void valueChange(ValueChangeEvent event) {
-		    String commandsString = (String) event.getProperty()
-			    .getValue();
-		    String[] commands = commandsString.split("\n");
+			private static final long serialVersionUID = 3818211730859843892L;
 
-		    Map<String, PackageData> packagesForSendingMap = UserContext
-			    .getContext().getPackagesForSending();
+			public void textChange(TextChangeEvent event) {
+			    String commandsString = (String) event.getText();
+			    String[] commands = commandsString.split("\n");
 
-		    // TODO add handling: what if there is less commands than it
-		    // should be
-		    int i = 0;
-		    for (String ip : packagesForSendingMap.keySet()) {
+			    Package job = UserContext.getContext().getJob();
+			    List<String> ipAddresses = job.getIpAddresses();
 
-			PackageData packageData = packagesForSendingMap.get(ip);
-			if (packageData == null) {
-			    packageData = new PackageData();
-			    packagesForSendingMap.put(ip, packageData);
+			    Map<String, PackageData> packagesForSendingMap = UserContext
+				    .getContext().getPackagesForSending();
+
+			    // TODO add handling: what if there is less commands
+			    // than it
+			    // should be
+			    int i = 0;
+			    for (String ipAddressComment : ipAddresses) {
+
+				String ip = ipAddressComment.substring(0,
+					ipAddressComment.indexOf(" "));
+
+				PackageData packageData = packagesForSendingMap
+					.get(ip);
+				if (packageData == null) {
+				    packageData = new PackageData();
+				    packagesForSendingMap.put(ip, packageData);
+				}
+				packageData.setCommand(commands[i++]);
+			    }
 			}
-			packageData.setCommand(commands[i++]);
-		    }
-		}
-	    });
+		    });
 	    commandsForPackages.setImmediate(true);
 
+	    removeAllComponents();
 	    addComponent(commandsForPackages);
 
 	}
     }
+
     private static final long serialVersionUID = -1087618745131764334L;
 
     private MenuBar menubar = new MenuBar();

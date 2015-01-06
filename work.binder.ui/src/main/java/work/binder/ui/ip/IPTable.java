@@ -30,7 +30,6 @@ import com.vaadin.ui.TextField;
 public class IPTable extends LayoutReloadComponent {
 
     private Table _table;
-    private Properties _slotProperties;
     private Properties _ipProperties;
 
     public static final String IP_ADDRESS = "ipAdress";
@@ -48,7 +47,6 @@ public class IPTable extends LayoutReloadComponent {
     public IPTable(Properties ipProperties, Properties slotProperties) {
 
 	setIpProperties(ipProperties);
-	setSlotProperties(slotProperties);
 
 	Table table = new Table("IPs");
 	setTable(table);
@@ -152,10 +150,6 @@ public class IPTable extends LayoutReloadComponent {
 
     private Properties getIpProperties() {
 	return _ipProperties;
-    }
-
-    private Properties getSlotProperties() {
-	return _slotProperties;
     }
 
     private Button.ClickListener provideCancelButtonListener() {
@@ -276,7 +270,8 @@ public class IPTable extends LayoutReloadComponent {
 
     private void setSlotCount(Item item, String ipAddress) {
 
-	Object slotObj = getSlotProperties().get(ipAddress);
+	Object slotObj = UserContext.getContext().getSlaveCountProperties()
+		.get(ipAddress);
 
 	String slotCount;
 	if (slotObj != null) {
@@ -293,10 +288,6 @@ public class IPTable extends LayoutReloadComponent {
 	item.getItemProperty(SLOTS).setValue(textField);
     }
 
-    private void setSlotProperties(Properties slotProperties) {
-	_slotProperties = slotProperties;
-    }
-
     private void setTable(Table table) {
 	_table = table;
     }
@@ -307,7 +298,8 @@ public class IPTable extends LayoutReloadComponent {
 	FileOutputStream outputStream = null;
 
 	try {
-	    Properties properties = getSlotProperties();
+	    Properties properties = UserContext.getContext()
+		    .getSlaveCountProperties();
 
 	    properties.put(ip, String.valueOf(slotCount));
 

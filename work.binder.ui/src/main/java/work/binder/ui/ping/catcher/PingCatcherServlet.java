@@ -31,6 +31,7 @@ public class PingCatcherServlet extends HttpServlet {
     private static final String EXECUTION = "execution";
     private static final String FORWARD_FOR = "X-FORWARDED-FOR";
     private static final String PROCESSOR_COUNT = "processorCount";
+    private static final String SLOT_COUNT = "slotCount";
     private static final String CANCEL = "cancel";
     private static final String PACKAGE_COMMAND = "packageCommand";
     private static final String CANCELED = "canceled";
@@ -100,6 +101,15 @@ public class PingCatcherServlet extends HttpServlet {
 			FileUtils.forceDelete(zipLocation);
 			response.addHeader(PACKAGE_COMMAND,
 				packageData.getCommand());
+			Object slaveCountObj = UserContext.getContext()
+				.getSlaveCountProperties().get(slaveIpAddress);
+			String slotCount = null;
+			if (slaveCountObj == null) {
+			    slotCount = "0";
+			} else {
+			    slotCount = slaveCountObj.toString();
+			}
+			response.addHeader(SLOT_COUNT, slotCount);
 		    } else {
 			// add appropriate exception
 		    }

@@ -3,6 +3,7 @@ package work.binder.ui;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class UserContext {
 
@@ -24,6 +25,8 @@ public class UserContext {
     // IP + is request for canceling sent?
     private Map<String, Boolean> _ipsForJobCanceling = new HashMap<String, Boolean>();
     private Map<String, Boolean> _ipsForJobClearing = new HashMap<String, Boolean>();
+    private Properties _slaveCountProperties = new Properties();
+    
     private UserContext() {
 
 	setJob(new Package());
@@ -59,6 +62,10 @@ public class UserContext {
 
     public Map<String, PackageData> getPackagesForSending() {
 	return _packagesForSending;
+    }
+
+    public Properties getSlaveCountProperties() {
+	return _slaveCountProperties;
     }
 
     public void setAvailableIPs(Map<String, Integer> availableIPs) {
