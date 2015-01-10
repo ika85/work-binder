@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
-import work.binder.ui.ip.AddNewIP;
+import work.binder.ui.ip.AddNewIPProcessor;
 import work.binder.ui.ip.IPTable;
 import work.binder.ui.jar.UploadFileProcessor;
 import work.binder.ui.job.PackageSendingProcessor;
@@ -28,7 +28,6 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Window.CloseListener;
 
 public class MainHomeMenu extends VerticalLayout {
-
 
     private static final long serialVersionUID = -1087618745131764334L;
 
@@ -78,8 +77,8 @@ public class MainHomeMenu extends VerticalLayout {
 		.loadIPAdresses(Locations.SLAVE_SLOTS_PROPERTIES_FILE);
 	IPTable ipTable = new IPTable(ipProperties, slotProperties);
 
-	AddNewIP addNewIPButton = new AddNewIP(ipTable, ipProperties,
-		slotProperties);
+	AddNewIPProcessor addNewIPButton = new AddNewIPProcessor(ipTable,
+		ipProperties, slotProperties);
 	Command ipTableAndNewIpCommand = prepareCommand("Slaves Status",
 		"830px", "80%", ipTable, addNewIPButton);
 	ipCommands.put("Slaves Status", ipTableAndNewIpCommand);

@@ -26,12 +26,13 @@ public class UserContext {
     private Map<String, Boolean> _ipsForJobCanceling = new HashMap<String, Boolean>();
     private Map<String, Boolean> _ipsForJobClearing = new HashMap<String, Boolean>();
     private Properties _slaveCountProperties = new Properties();
-    
+
     private UserContext() {
 
 	setJob(new Package());
 
     }
+
     public void addIPForCanceling(String ip) {
 	getIpsForJobCanceling().put(ip, false);
     }

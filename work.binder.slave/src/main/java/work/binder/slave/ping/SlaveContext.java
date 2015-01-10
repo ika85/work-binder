@@ -6,7 +6,7 @@ import java.util.List;
 public class SlaveContext {
 
     private static boolean _occupied;
-    
+
     private static List<ProcessData> _processesData = new ArrayList<>();
     private static boolean _canceled;
     private static boolean _cleared;
@@ -26,6 +26,7 @@ public class SlaveContext {
     public static synchronized boolean isOccupied() {
 	return _occupied;
     }
+
     public static void setCanceled(boolean canceled) {
 	_canceled = canceled;
     }

@@ -19,7 +19,8 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.TextField;
 
-public class AddNewIP extends LayoutReloadComponent implements ClickListener {
+public class AddNewIPProcessor extends LayoutReloadComponent implements
+	ClickListener {
 
     private static final long serialVersionUID = 6469952989532073243L;
 
@@ -29,7 +30,7 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
     private Properties _slotProperties;
     private IPTable _ipTable;
 
-    public AddNewIP(IPTable ipTable, Properties ipProperties,
+    public AddNewIPProcessor(IPTable ipTable, Properties ipProperties,
 	    Properties slotProperties) {
 
 	setMargin(true);
@@ -95,6 +96,9 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 			    .getContainerDataSource(),
 		    getIpProperties().keySet(), getIpProperties());
 
+	    getComment().setValue(StringUtils.EMPTY);
+	    getSlaveIP().setValue(StringUtils.EMPTY);
+
 	    addComponent(new Label(String.format("IP (%s) added.", ip)));
 
 	    getWindow().requestRepaint();
@@ -106,8 +110,6 @@ public class AddNewIP extends LayoutReloadComponent implements ClickListener {
 
     @Override
     public void reload() {
-	int i = 4;
-	i++;
     }
 
     private TextField getComment() {
