@@ -5,6 +5,7 @@ import java.util.List;
 
 import work.binder.ui.Package;
 import work.binder.ui.LayoutReloadComponent;
+import work.binder.ui.PackageCommands;
 import work.binder.ui.PackageData;
 import work.binder.ui.UserContext;
 
@@ -23,13 +24,16 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 
     private PackagesSelectionForNewJob _packagesSelectionForNewJob;
     private IPsSelectionForNewJob _iPsSelectionForNewJob;
+    private PackageCommands _commandsForPackages;
 
     public PackageSendingProcessor(
 	    PackagesSelectionForNewJob selectionJarsForNewJob,
-	    IPsSelectionForNewJob iPsSelectionForNewJob) {
+	    IPsSelectionForNewJob iPsSelectionForNewJob,
+	    PackageCommands commandsForPackages) {
 
 	setPackagesSelectionForNewJob(selectionJarsForNewJob);
 	setiPsSelectionForNewJob(iPsSelectionForNewJob);
+	setCommandsForPackages(commandsForPackages);
 
 	final Button saveButton = new Button("Send");
 	saveButton.setDisableOnClick(true);
@@ -94,6 +98,7 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 
 		getPackagesSelectionForNewJob().reload();
 		getiPsSelectionForNewJob().reload();
+		getCommandsForPackages().reload();
 	    }
 	}
 	// Re-enable the button
@@ -109,12 +114,20 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 
     }
 
+    private PackageCommands getCommandsForPackages() {
+	return _commandsForPackages;
+    }
+
     private IPsSelectionForNewJob getiPsSelectionForNewJob() {
 	return _iPsSelectionForNewJob;
     }
 
     private PackagesSelectionForNewJob getPackagesSelectionForNewJob() {
 	return _packagesSelectionForNewJob;
+    }
+
+    private void setCommandsForPackages(PackageCommands commandsForPackages) {
+	_commandsForPackages = commandsForPackages;
     }
 
     private void setiPsSelectionForNewJob(
