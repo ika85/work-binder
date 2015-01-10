@@ -51,10 +51,10 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 	List<String> packagesForSending = job.getPackages();
 	// TODO2 + check are package and ipAddress set.
 
-	if (packagesForSending == null) {
+	if (packagesForSending == null || packagesForSending.isEmpty()) {
 	    getWindow().showNotification("Please choose package.");
 	} else {
-	    if (ipAddresses == null) {
+	    if (ipAddresses == null || ipAddresses.isEmpty()) {
 		getWindow().showNotification("Please choose IP Address.");
 	    } else {
 		for (String ipAddressComment : ipAddresses) {
@@ -63,7 +63,7 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 		    // job)
 
 		    String ip = ipAddressComment.substring(0,
-			    ipAddressComment.indexOf(" "));
+			    ipAddressComment.indexOf(SPACE));
 
 		    PackageData packageData = UserContext.getContext()
 			    .getPackagesForSending().get(ip);
