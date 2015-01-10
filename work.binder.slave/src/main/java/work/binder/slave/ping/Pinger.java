@@ -258,14 +258,14 @@ public class Pinger {
 			// check cancel after these changes
 			String fileName = new File(exeFilePath).getName();
 
-			 Process process = Runtime.getRuntime().exec(
-			 packageCommand);
-			
-			 ProcessData processData = new ProcessData();
-			 processData.setProcess(process);
-			 processData.setServiceName(fileName);
-			
-			 SlaveContext.getProcessesData().add(processData);
+			Process process = Runtime.getRuntime().exec(
+				exeFilePath + " " + packageCommand);
+
+			ProcessData processData = new ProcessData();
+			processData.setProcess(process);
+			processData.setServiceName(fileName);
+
+			SlaveContext.getProcessesData().add(processData);
 		    }
 		}
 
