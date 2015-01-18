@@ -15,7 +15,7 @@ public class ZipUtils {
 
 	boolean done = false;
 
-	byte[] buffer = new byte[1024];
+	byte[] buffer = new byte[2048];
 
 	try {
 

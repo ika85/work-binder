@@ -2,17 +2,19 @@ package work.binder.ui.ping.catcher;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,6 +39,7 @@ public class PingCatcherServlet extends HttpServlet {
     private static final String CANCELED = "canceled";
     private static final String ZIPPED_PACKAGES = "zippedPackages";
     private static final String CLEAR = "clear";
+    private static final String ADDITIONAL_DATA = "additionalData";
 
     @Override
     /**
@@ -79,8 +82,10 @@ public class PingCatcherServlet extends HttpServlet {
 
 		    response.addHeader(CANCEL, null);
 		}
-	    } else if (UserContext.getContext().getPackagesForSending()
-		    .containsKey(slaveIpAddress)) {
+	    } else if (UserContext.getContext().getIpsForStartingJob()
+		    .containsKey(slaveIpAddress)
+		    && UserContext.getContext().getPackagesForSending()
+			    .containsKey(slaveIpAddress)) {
 
 		PackageData packageData = UserContext.getContext()
 			.getPackagesForSending().get(slaveIpAddress);
@@ -94,22 +99,38 @@ public class PingCatcherServlet extends HttpServlet {
 			    Locations.UPLOAD_PACKAGE_LOCATION, ZIPPED_PACKAGES
 				    + System.currentTimeMillis());
 		    String zippedPackages = zipLocation.getAbsolutePath();
-		    boolean done = ZipUtils.zip(packageLocations,
-			    zippedPackages);
-		    if (done) {
-			copyOutFile(response, new File(zippedPackages));
-			FileUtils.forceDelete(zipLocation);
-			response.addHeader(PACKAGE_COMMAND,
-				packageData.getCommand());
-			Object slaveCountObj = UserContext.getContext()
-				.getSlaveCountProperties().get(slaveIpAddress);
-			String slotCount = null;
-			if (slaveCountObj == null) {
+
+		    Object slaveCountObj = UserContext.getContext()
+			    .getSlaveCountProperties().get(slaveIpAddress);
+
+		    String slotCount = null;
+		    if (slaveCountObj == null) {
+			slotCount = "0";
+		    } else {
+			slotCount = slaveCountObj.toString();
+			if (StringUtils.isEmpty(slotCount)) {
 			    slotCount = "0";
-			} else {
-			    slotCount = slaveCountObj.toString();
 			}
-			response.addHeader(SLOT_COUNT, slotCount);
+		    }
+
+		    File file = File.createTempFile(ADDITIONAL_DATA,
+			    ".properties");
+		    OutputStream out = new FileOutputStream(file);
+		    storeAdditionalData(out, packageData.getCommand(),
+			    slotCount);
+		    out.close();
+
+		    List<String> fileList = new ArrayList<String>();
+		    fileList.addAll(packageLocations);
+		    fileList.add(file.getAbsolutePath());
+
+		    boolean done = ZipUtils.zip(fileList, zippedPackages);
+		    if (done) {
+
+			copyOutFile(response, zipLocation);
+			UserContext.getContext().getIpsForStartingJob()
+				.remove(slaveIpAddress);
+			// FileUtils.forceDelete(zipLocation);
 		    } else {
 			// add appropriate exception
 		    }
@@ -187,6 +208,26 @@ public class PingCatcherServlet extends HttpServlet {
 	IOUtils.copy(inputStream, outputStream);
 
 	inputStream.close();
+
+	// OutputStream outputStream = response.getOutputStream();
+	//
+	// response.setContentType("application/x-download");
+	// response.setHeader("Content-Disposition", "attachment; filename="
+	// + file.getName());
+	//
+	// InputStream inputStream = new FileInputStream(file);
+	//
+	// IOUtils.copy(inputStream, outputStream);
+    }
+
+    private void storeAdditionalData(OutputStream out, String command,
+	    String slotCount) throws IOException {
+
+	Properties additionalData = new Properties();
+	additionalData.put(PACKAGE_COMMAND, command);
+	additionalData.put(SLOT_COUNT, slotCount);
+
+	additionalData.store(out, StringUtils.EMPTY);
     }
 
 }

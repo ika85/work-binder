@@ -73,10 +73,15 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 				.put(ip, packageData);
 		    }
 		    packageData.setPackages(packagesForSending);
-		    UserContext.getContext().getAvailableIPs().remove(ip);
-		    UserContext.getContext().getBusyIPs()
-			    .put(ip, packagesForSending);
 
+		    synchronized (this) {
+
+			UserContext.getContext().getAvailableIPs().remove(ip);
+			UserContext.getContext().getBusyIPs()
+				.put(ip, packagesForSending);
+			UserContext.getContext().getIpsForStartingJob()
+				.put(ip, true);
+		    }
 		    // Show text that the save operation has been completed
 
 		    StringBuilder packages = new StringBuilder();
@@ -101,10 +106,9 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 		getCommandsForPackages().reload();
 	    }
 	}
-	// Re-enable the button
+
 	event.getButton().setEnabled(true);
 
-	// TODO6 clearing assigned package (zip) and occupied computer (IP)
 	// TODO7 add OK button
 
     }

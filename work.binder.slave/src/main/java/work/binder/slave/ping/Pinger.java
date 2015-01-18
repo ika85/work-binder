@@ -2,14 +2,19 @@ package work.binder.slave.ping;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -22,6 +27,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
 
 //TODO create service from Pinger; immediate=true, activate - ping();
 public class Pinger {
@@ -96,8 +102,13 @@ public class Pinger {
     }
 
     public static void ping(String masterUrl) {
-
+	// final HttpParams httpParams = new BasicHttpParams();
+	// HttpConnectionParams.setConnectionTimeout(httpParams, 30000);
 	HttpClient client = new DefaultHttpClient();
+	client.getParams().setParameter(
+		CoreConnectionPNames.CONNECTION_TIMEOUT, 130000);
+	client.getParams()
+		.setParameter(CoreConnectionPNames.SO_TIMEOUT, 160000);
 	HttpPost post = new HttpPost(masterUrl);
 	try {
 	    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
@@ -193,20 +204,10 @@ public class Pinger {
 		    }
 
 		    if (continueWithWork) {
+
 			InputStream inputStream = response.getEntity()
 				.getContent();
-
-			String packageCommand = provideHeaderValue(response,
-				PACKAGE_COMMAND);
-
-			String slotCountString = provideHeaderValue(response,
-				SLOT_COUNT);
-
-			if (!"".equals(slotCountString)) {
-			    int slotCount = Integer.valueOf(slotCountString);
-			    executeIfThereIsSomething(inputStream,
-				    packageCommand, slotCount);
-			}
+			executeIfThereIsSomething(inputStream);
 
 		    }
 		}
@@ -223,12 +224,34 @@ public class Pinger {
     // master could set estimates for the job; if the job isn't done in the
     // expected period; master could abort the job, and send the job to some
     // other slave
-    private static void executeIfThereIsSomething(InputStream inputStream,
-	    String packageCommand, int slotCount) throws IOException {
+    private static void executeIfThereIsSomething(InputStream inputStream)
+	    throws IOException {
 
 	File tempPackageFile = copyStream(inputStream);
 
 	if (tempPackageFile != null) {
+
+	    Path mainPackagePath = Files.createTempDirectory("mainPackage"
+		    + System.currentTimeMillis());
+	    File mainPackage = mainPackagePath.toFile();
+
+	    FileUtils.forceMkdir(mainPackage);
+	    UnzipUtils.unzip(tempPackageFile, mainPackage.getAbsolutePath());
+
+	    Properties properties = new Properties();
+	    File additionalDataFile = mainPackage
+		    .listFiles(new FilenameFilter() {
+
+			@Override
+			public boolean accept(File arg0, String arg1) {
+			    return arg1.endsWith(".properties");
+			}
+		    })[0];
+	    InputStream inStream = new FileInputStream(additionalDataFile);
+	    properties.load(inStream);
+	    inStream.close();
+
+	    int slotCount = Integer.valueOf(properties.getProperty(SLOT_COUNT));
 
 	    // TODO slot instead of processor count
 	    LocationProcessor.createDownloadTempDirs(slotCount);
@@ -237,10 +260,6 @@ public class Pinger {
 
 		File slotTempFolder = LocationProcessor.provideBinderFolder(i);
 		if (slotTempFolder != null) {
-		    File packageFile = new File(slotTempFolder, PACKAGE
-			    + System.currentTimeMillis() + DOT_ZIP);
-
-		    FileUtils.copyFile(tempPackageFile, packageFile);
 
 		    SlaveContext.setOccupied(true);
 
@@ -248,27 +267,32 @@ public class Pinger {
 			    + System.currentTimeMillis());
 
 		    FileUtils.forceMkdir(folderWithPackages);
-		    UnzipUtils.unzip(packageFile,
-			    folderWithPackages.getAbsolutePath());
+		    FileUtils.copyDirectory(mainPackage, folderWithPackages);
 
 		    for (File packages : folderWithPackages.listFiles()) {
-			String exeFilePath = UnzipUtils.unzip(packages,
-				packages.getParent());
+			if (packages.getName().endsWith(".zip")) {
+			    String exeFilePath = UnzipUtils.unzip(packages,
+				    packages.getParent());
 
-			// check cancel after these changes
-			String fileName = new File(exeFilePath).getName();
+			    // check cancel after these changes
+			    String fileName = new File(exeFilePath).getName();
 
-			Process process = Runtime.getRuntime().exec(
-				exeFilePath + " " + packageCommand);
+			    Process process = Runtime
+				    .getRuntime()
+				    .exec(exeFilePath
+					    + " "
+					    + properties
+						    .getProperty(PACKAGE_COMMAND));
 
-			ProcessData processData = new ProcessData();
-			processData.setProcess(process);
-			processData.setServiceName(fileName);
+			    ProcessData processData = new ProcessData();
+			    processData.setProcess(process);
+			    processData.setServiceName(fileName);
 
-			SlaveContext.getProcessesData().add(processData);
+			    SlaveContext.getProcessesData().add(processData);
+			}
 		    }
-		}
 
+		}
 	    }
 	    FileUtils.forceDelete(tempPackageFile);
 	}
@@ -277,21 +301,4 @@ public class Pinger {
 
     }
 
-    private static String provideHeaderValue(HttpResponse response,
-	    String specifiedHeaderName) {
-
-	String headerValue = "";
-	Header[] headers = response.getHeaders(specifiedHeaderName);
-
-	if (headers != null && headers.length > 0) {
-	    Header header = headers[0];
-	    String headerName = header.getName();
-
-	    if (specifiedHeaderName.equals(headerName)) {
-		headerValue = header.getValue();
-	    }
-	}
-
-	return headerValue;
-    }
 }

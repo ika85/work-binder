@@ -25,6 +25,7 @@ public class UserContext {
     // IP + is request for canceling sent?
     private Map<String, Boolean> _ipsForJobCanceling = new HashMap<String, Boolean>();
     private Map<String, Boolean> _ipsForJobClearing = new HashMap<String, Boolean>();
+    private Map<String, Boolean> _ipsForStartingJob = new HashMap<String, Boolean>();
     private Properties _slaveCountProperties = new Properties();
 
     private UserContext() {
@@ -41,6 +42,10 @@ public class UserContext {
 	getIpsForJobClearing().put(ip, false);
     }
 
+    public void addIPForStartig(String ip) {
+	getIpsForStartingJob().put(ip, false);
+    }
+
     public Map<String, Integer> getAvailableIPs() {
 	return _availableIPs;
     }
@@ -55,6 +60,10 @@ public class UserContext {
 
     public Map<String, Boolean> getIpsForJobClearing() {
 	return _ipsForJobClearing;
+    }
+
+    public Map<String, Boolean> getIpsForStartingJob() {
+	return _ipsForStartingJob;
     }
 
     public Package getJob() {
@@ -79,6 +88,10 @@ public class UserContext {
 
     public void setIpsForJobClearing(Map<String, Boolean> ipsForJobClearing) {
 	_ipsForJobClearing = ipsForJobClearing;
+    }
+
+    public void setIpsForStartingJob(Map<String, Boolean> ipsForStartingJob) {
+	_ipsForStartingJob = ipsForStartingJob;
     }
 
     public void setPackagesForSending(
