@@ -75,6 +75,8 @@ public class MainHomeMenu extends VerticalLayout {
 		.loadIPAdresses(Locations.IP_ADRESSES_PROPERTIES_FILE);
 	Properties slotProperties = ResourceUtils
 		.loadIPAdresses(Locations.SLAVE_SLOTS_PROPERTIES_FILE);
+
+	UserContext.getContext().setSlaveCountProperties(slotProperties);
 	IPTable ipTable = new IPTable(ipProperties, slotProperties);
 
 	AddNewIPProcessor addNewIPButton = new AddNewIPProcessor(ipTable,

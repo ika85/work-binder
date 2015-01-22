@@ -209,15 +209,6 @@ public class PingCatcherServlet extends HttpServlet {
 
 	inputStream.close();
 
-	// OutputStream outputStream = response.getOutputStream();
-	//
-	// response.setContentType("application/x-download");
-	// response.setHeader("Content-Disposition", "attachment; filename="
-	// + file.getName());
-	//
-	// InputStream inputStream = new FileInputStream(file);
-	//
-	// IOUtils.copy(inputStream, outputStream);
     }
 
     private void storeAdditionalData(OutputStream out, String command,

@@ -31,6 +31,7 @@ public class IPTable extends LayoutReloadComponent {
 
     private Table _table;
     private Properties _ipProperties;
+    private Properties _slotProperties;
 
     public static final String IP_ADDRESS = "ipAdress";
     public static final String NA = "N/A";
@@ -47,10 +48,14 @@ public class IPTable extends LayoutReloadComponent {
     public IPTable(Properties ipProperties, Properties slotProperties) {
 
 	setIpProperties(ipProperties);
+	setSlotProperties(slotProperties);
 
 	Table table = new Table("IPs");
 	setTable(table);
 	addComponent(table);
+
+	table.setMultiSelect(false);
+	getTable().setNullSelectionAllowed(false);
 
 	table.setWidth("100%");
 	table.setHeight("170px");
@@ -94,17 +99,26 @@ public class IPTable extends LayoutReloadComponent {
 
     }
 
+    public Properties getSlotProperties() {
+	return _slotProperties;
+    }
+
     public Table getTable() {
 	return _table;
     }
 
     @Override
     public void reload() {
-
+	getTable().setMultiSelect(false);
+	getTable().setNullSelectionAllowed(false);
 	fillContainerDataSource((IndexedContainer) getTable()
 		.getContainerDataSource(), getIpProperties().keySet(),
 		getIpProperties());
 
+    }
+
+    public void setSlotProperties(Properties slotProperties) {
+	_slotProperties = slotProperties;
     }
 
     private Item addNewItem(IndexedContainer container,
@@ -206,22 +220,15 @@ public class IPTable extends LayoutReloadComponent {
 	String selectedItem = null;
 	Object selectedItemsObj = getTable().getValue();
 	if (selectedItemsObj != null) {
-	    if (selectedItemsObj instanceof Collection) {
+	    if (selectedItemsObj instanceof String) {
 
-		@SuppressWarnings("unchecked")
-		Collection<String> selectedItems = (Collection<String>) selectedItemsObj;
+		selectedItem = selectedItemsObj.toString();
 
-		Iterator<String> iterator = selectedItems.iterator();
-
-		if (iterator.hasNext()) {
-		    selectedItem = iterator.next();
-
-		    // UserContext.getContext().addIPForCanceling(
-		    // selectedItem);
-		} else {
-		    getWindow().showNotification(
-			    "Please click on the row with IP.");
-		}
+		// UserContext.getContext().addIPForCanceling(
+		// selectedItem);
+	    } else {
+		getWindow()
+			.showNotification("Please click on the row with IP.");
 	    }
 	}
 
@@ -270,8 +277,7 @@ public class IPTable extends LayoutReloadComponent {
 
     private void setSlotCount(Item item, String ipAddress) {
 
-	Object slotObj = UserContext.getContext().getSlaveCountProperties()
-		.get(ipAddress);
+	Object slotObj = getSlotProperties().get(ipAddress);
 
 	String slotCount;
 	if (slotObj != null) {
@@ -298,8 +304,7 @@ public class IPTable extends LayoutReloadComponent {
 	FileOutputStream outputStream = null;
 
 	try {
-	    Properties properties = UserContext.getContext()
-		    .getSlaveCountProperties();
+	    Properties properties = getSlotProperties();
 
 	    properties.put(ip, String.valueOf(slotCount));
 

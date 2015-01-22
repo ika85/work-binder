@@ -103,4 +103,8 @@ public class UserContext {
 	_job = job;
     }
 
+    protected void setSlaveCountProperties(Properties slaveCountProperties) {
+	_slaveCountProperties = slaveCountProperties;
+    }
+
 }

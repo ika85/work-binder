@@ -252,53 +252,71 @@ public class Pinger {
 	    inStream.close();
 
 	    int slotCount = Integer.valueOf(properties.getProperty(SLOT_COUNT));
+	    try {
+		// TODO slot instead of processor count
+		LocationProcessor.createDownloadTempDirs(slotCount);
 
-	    // TODO slot instead of processor count
-	    LocationProcessor.createDownloadTempDirs(slotCount);
+		for (int i = 0; i < slotCount; i++) {
 
-	    for (int i = 0; i < slotCount; i++) {
+		    File slotTempFolder = LocationProcessor
+			    .provideBinderFolder(i);
+		    if (slotTempFolder != null) {
 
-		File slotTempFolder = LocationProcessor.provideBinderFolder(i);
-		if (slotTempFolder != null) {
+			SlaveContext.setOccupied(true);
 
-		    SlaveContext.setOccupied(true);
+			File folderWithPackages = new File(slotTempFolder,
+				PACKAGE + System.currentTimeMillis());
 
-		    File folderWithPackages = new File(slotTempFolder, PACKAGE
-			    + System.currentTimeMillis());
+			FileUtils.forceMkdir(folderWithPackages);
+			FileUtils
+				.copyDirectory(mainPackage, folderWithPackages);
 
-		    FileUtils.forceMkdir(folderWithPackages);
-		    FileUtils.copyDirectory(mainPackage, folderWithPackages);
+			for (File packages : folderWithPackages.listFiles()) {
+			    if (packages.getName().endsWith(".zip")) {
+				String exeFilePath = UnzipUtils.unzip(packages,
+					packages.getParent());
 
-		    for (File packages : folderWithPackages.listFiles()) {
-			if (packages.getName().endsWith(".zip")) {
-			    String exeFilePath = UnzipUtils.unzip(packages,
-				    packages.getParent());
+				ProcessData processData = new ProcessData();
 
-			    // check cancel after these changes
-			    String fileName = new File(exeFilePath).getName();
+				Process process = null;
+				if (exeFilePath == null) {
 
-			    Process process = Runtime
-				    .getRuntime()
-				    .exec(exeFilePath
-					    + " "
-					    + properties
+				    LOG.warn("Executable file hasn't been found. Sent command will be performed.");
+				    process = Runtime
+					    .getRuntime()
+					    .exec(properties
 						    .getProperty(PACKAGE_COMMAND));
 
-			    ProcessData processData = new ProcessData();
-			    processData.setProcess(process);
-			    processData.setServiceName(fileName);
+				} else {
+				    // check cancel after these changes
+				    String fileName = new File(exeFilePath)
+					    .getName();
 
-			    SlaveContext.getProcessesData().add(processData);
+				    process = Runtime
+					    .getRuntime()
+					    .exec(exeFilePath
+						    + " "
+						    + properties
+							    .getProperty(PACKAGE_COMMAND));
+				    processData.setServiceName(fileName);
+				}
+
+				processData.setProcess(process);
+
+				SlaveContext.getProcessesData()
+					.add(processData);
+			    }
 			}
-		    }
 
+		    }
 		}
+	    } finally {
+		FileUtils.forceDelete(tempPackageFile);
+		FileUtils.forceDelete(mainPackage);
 	    }
-	    FileUtils.forceDelete(tempPackageFile);
 	}
 
 	// TODO add what if slotTempFolder == null;
 
     }
-
 }
