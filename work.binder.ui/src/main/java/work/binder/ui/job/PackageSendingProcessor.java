@@ -62,9 +62,15 @@ public class PackageSendingProcessor extends LayoutReloadComponent implements
 		    // other
 		    // job)
 
-		    String ip = ipAddressComment.substring(0,
-			    ipAddressComment.indexOf(SPACE));
+		    int indexOfAComment = ipAddressComment.indexOf(SPACE);
 
+		    String ip = null;
+
+		    if (indexOfAComment < 0) {
+			ip = ipAddressComment;
+		    } else {
+			ip = ipAddressComment.substring(0, indexOfAComment);
+		    }
 		    PackageData packageData = UserContext.getContext()
 			    .getPackagesForSending().get(ip);
 		    if (packageData == null) {

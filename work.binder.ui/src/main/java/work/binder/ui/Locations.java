@@ -7,7 +7,7 @@ public class Locations {
     // wants, one by one (whole folder?)
     public static final String UPLOAD_PACKAGE_LOCATION = "uploadedPackages";
 
-    public static final String IP_ADRESSES_PROPERTIES_FILE = "configuration/ip.properties";
-    public static final String SLAVE_SLOTS_PROPERTIES_FILE = "configuration/slaveSlots.properties";
+    public static final String IP_ADRESSES_PROPERTIES_FILE = "ip.properties";
+    public static final String SLAVE_SLOTS_PROPERTIES_FILE = "slaveSlots.properties";
 
 }

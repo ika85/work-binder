@@ -27,11 +27,9 @@ public class AddNewIPProcessor extends LayoutReloadComponent implements
     private TextField _slaveIP;
     private TextField _comment;
     private Properties _ipProperties;
-    private Properties _slotProperties;
     private IPTable _ipTable;
 
-    public AddNewIPProcessor(IPTable ipTable, Properties ipProperties,
-	    Properties slotProperties) {
+    public AddNewIPProcessor(IPTable ipTable, Properties ipProperties) {
 
 	setMargin(true);
 	TextField slaveIP = new TextField();
@@ -41,7 +39,6 @@ public class AddNewIPProcessor extends LayoutReloadComponent implements
 	setComment(comment);
 	setIpTable(ipTable);
 	setIpProperties(ipProperties);
-	setSlotProperties(slotProperties);
 	addComponent(new Label("New IP Address:"));
 	addComponent(slaveIP);
 	addComponent(new Label("Comment:"));
@@ -128,10 +125,6 @@ public class AddNewIPProcessor extends LayoutReloadComponent implements
 	return _slaveIP;
     }
 
-    private Properties getSlotProperties() {
-	return _slotProperties;
-    }
-
     private void setComment(TextField comment) {
 	_comment = comment;
     }
@@ -148,7 +141,4 @@ public class AddNewIPProcessor extends LayoutReloadComponent implements
 	_slaveIP = slaveIP;
     }
 
-    private void setSlotProperties(Properties slotProperties) {
-	_slotProperties = slotProperties;
-    }
 }

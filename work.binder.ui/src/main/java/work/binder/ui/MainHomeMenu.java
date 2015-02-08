@@ -80,7 +80,7 @@ public class MainHomeMenu extends VerticalLayout {
 	IPTable ipTable = new IPTable(ipProperties, slotProperties);
 
 	AddNewIPProcessor addNewIPButton = new AddNewIPProcessor(ipTable,
-		ipProperties, slotProperties);
+		ipProperties);
 	Command ipTableAndNewIpCommand = prepareCommand("Slaves Status",
 		"830px", "80%", ipTable, addNewIPButton);
 	ipCommands.put("Slaves Status", ipTableAndNewIpCommand);

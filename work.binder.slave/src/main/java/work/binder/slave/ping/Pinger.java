@@ -12,9 +12,13 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
@@ -239,84 +243,114 @@ public class Pinger {
 	    UnzipUtils.unzip(tempPackageFile, mainPackage.getAbsolutePath());
 
 	    Properties properties = new Properties();
-	    File additionalDataFile = mainPackage
-		    .listFiles(new FilenameFilter() {
+	    File[] propFiles = mainPackage.listFiles(new FilenameFilter() {
 
-			@Override
-			public boolean accept(File arg0, String arg1) {
-			    return arg1.endsWith(".properties");
-			}
-		    })[0];
-	    InputStream inStream = new FileInputStream(additionalDataFile);
-	    properties.load(inStream);
-	    inStream.close();
-
-	    int slotCount = Integer.valueOf(properties.getProperty(SLOT_COUNT));
-	    try {
-		// TODO slot instead of processor count
-		LocationProcessor.createDownloadTempDirs(slotCount);
-
-		for (int i = 0; i < slotCount; i++) {
-
-		    File slotTempFolder = LocationProcessor
-			    .provideBinderFolder(i);
-		    if (slotTempFolder != null) {
-
-			SlaveContext.setOccupied(true);
-
-			File folderWithPackages = new File(slotTempFolder,
-				PACKAGE + System.currentTimeMillis());
-
-			FileUtils.forceMkdir(folderWithPackages);
-			FileUtils
-				.copyDirectory(mainPackage, folderWithPackages);
-
-			for (File packages : folderWithPackages.listFiles()) {
-			    if (packages.getName().endsWith(".zip")) {
-				String exeFilePath = UnzipUtils.unzip(packages,
-					packages.getParent());
-
-				ProcessData processData = new ProcessData();
-
-				Process process = null;
-				if (exeFilePath == null) {
-
-				    LOG.warn("Executable file hasn't been found. Sent command will be performed.");
-				    process = Runtime
-					    .getRuntime()
-					    .exec(properties
-						    .getProperty(PACKAGE_COMMAND));
-
-				} else {
-				    // check cancel after these changes
-				    String fileName = new File(exeFilePath)
-					    .getName();
-
-				    process = Runtime
-					    .getRuntime()
-					    .exec(exeFilePath
-						    + " "
-						    + properties
-							    .getProperty(PACKAGE_COMMAND));
-				    processData.setServiceName(fileName);
-				}
-
-				processData.setProcess(process);
-
-				SlaveContext.getProcessesData()
-					.add(processData);
-			    }
-			}
-
-		    }
+		@Override
+		public boolean accept(File arg0, String arg1) {
+		    return arg1.endsWith(".properties");
 		}
-	    } finally {
-		FileUtils.forceDelete(tempPackageFile);
-		FileUtils.forceDelete(mainPackage);
+	    });
+
+	    if (propFiles.length > 0) {
+		File additionalDataFile = propFiles[0];
+		InputStream inStream = new FileInputStream(additionalDataFile);
+		properties.load(inStream);
+		inStream.close();
+
+		int slotCount = Integer.valueOf(properties
+			.getProperty(SLOT_COUNT));
+		try {
+		    // TODO slot instead of processor count
+		    LocationProcessor.createDownloadTempDirs(slotCount);
+
+		    for (int i = 0; i < slotCount; i++) {
+
+			File slotTempFolder = LocationProcessor
+				.provideBinderFolder(i);
+			if (slotTempFolder != null) {
+
+			    SlaveContext.setOccupied(true);
+
+			    File folderWithPackages = new File(slotTempFolder,
+				    PACKAGE + System.currentTimeMillis());
+
+			    FileUtils.forceMkdir(folderWithPackages);
+			    FileUtils.copyDirectory(mainPackage,
+				    folderWithPackages);
+
+			    for (File packages : folderWithPackages.listFiles()) {
+				if (packages.getName().endsWith(".zip")) {
+				    CommandFileData commandFileData = UnzipUtils
+					    .unzip(packages,
+						    packages.getParent());
+
+				    String commandFilePath = commandFileData
+					    .getCommandFilePath();
+
+				    ProcessData processData = new ProcessData();
+
+				    Process process = null;
+				    if (commandFilePath == null) {
+					LOG.error("Missing command file in the package");
+				    } else {
+
+					File commandFile = new File(
+						commandFilePath);
+					setExecutePermission(commandFile
+						.getAbsolutePath());
+					// check cancel after these changes
+					String fileName = commandFile.getName();
+
+					StringBuilder commandBuilder = new StringBuilder();
+					if (commandFileData
+						.isBatchFileIndicator()) {
+					    commandBuilder.append("./");
+					}
+					commandBuilder.append(commandFilePath);
+					commandBuilder.append(" ");
+					commandBuilder.append(commandFile
+						.getParentFile()
+						.getAbsolutePath());
+					commandBuilder.append(" ");
+					commandBuilder.append(properties
+						.getProperty(PACKAGE_COMMAND));
+
+					process = Runtime.getRuntime().exec(
+						commandBuilder.toString());
+					processData.setServiceName(fileName);
+				    }
+
+				    processData.setProcess(process);
+
+				    SlaveContext.getProcessesData().add(
+					    processData);
+				}
+			    }
+
+			}
+		    }
+		} finally {
+		    FileUtils.forceDelete(tempPackageFile);
+		    FileUtils.forceDelete(mainPackage);
+		}
 	    }
 	}
 
 	// TODO add what if slotTempFolder == null;
 
+    }
+
+    private static void setExecutePermission(String filePath)
+	    throws IOException {
+
+	Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+	// add owners permission
+	perms.add(PosixFilePermission.OWNER_EXECUTE);
+	// add group permissions
+	perms.add(PosixFilePermission.GROUP_EXECUTE);
+	// add others permissions
+	perms.add(PosixFilePermission.OTHERS_EXECUTE);
+
+	Files.setPosixFilePermissions(Paths.get(filePath), perms);
     }
 }

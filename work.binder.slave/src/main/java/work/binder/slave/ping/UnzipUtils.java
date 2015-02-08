@@ -12,10 +12,14 @@ public class UnzipUtils {
 
     private static final int BUFFER = 2048;
     private static final String DOT_BAT = ".bat";
+    private static final String DOT_SH = ".sh";
 
-    public static String unzip(File zipFile, String outputFolder) {
+    public static CommandFileData unzip(File zipFile, String outputFolder) {
 
-	String exeFilePath = null;
+	String commandFilePath = null;
+	String batFilePath = null;
+	String shFilePath = null;
+	boolean batFileInd = false;
 	try {
 
 	    ZipFile zip = new ZipFile(zipFile);
@@ -58,7 +62,9 @@ public class UnzipUtils {
 		    // should we handle situation when there is more then one
 		    // batch file
 		    if (currentEntry.endsWith(DOT_BAT)) {
-			exeFilePath = destFile.getAbsolutePath();
+			batFilePath = destFile.getAbsolutePath();
+		    } else if (currentEntry.endsWith(DOT_SH)) {
+			shFilePath = destFile.getAbsolutePath();
 		    }
 		}
 
@@ -70,7 +76,17 @@ public class UnzipUtils {
 	    // TODO add exception handle
 	}
 
-	return exeFilePath;
+	if (batFilePath == null) {
+	    commandFilePath = shFilePath;
+	} else {
+	    commandFilePath = batFilePath;
+	    batFileInd = true;
+	}
+
+	CommandFileData commandFileData = new CommandFileData(commandFilePath,
+		batFileInd);
+
+	return commandFileData;
 
     }
 

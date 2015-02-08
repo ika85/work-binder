@@ -38,8 +38,13 @@ public class PackageCommands extends LayoutReloadComponent {
 		int i = 0;
 		for (String ipAddressComment : ipAddresses) {
 
-		    String ip = ipAddressComment.substring(0,
-			    ipAddressComment.indexOf(" "));
+		    int indexOfNewLine = ipAddressComment.indexOf(" ");
+		    String ip = null;
+		    if (indexOfNewLine < 0) {
+			ip = ipAddressComment;
+		    } else {
+			ip = ipAddressComment.substring(0, indexOfNewLine);
+		    }
 
 		    PackageData packageData = packagesForSendingMap.get(ip);
 		    if (packageData == null) {
