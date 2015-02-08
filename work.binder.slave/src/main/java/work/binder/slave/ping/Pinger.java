@@ -296,13 +296,13 @@ public class Pinger {
 
 					File commandFile = new File(
 						commandFilePath);
-					setExecutePermission(commandFile
-						.getAbsolutePath());
+					// setExecutePermission(commandFile
+					// .getAbsolutePath());
 					// check cancel after these changes
 					String fileName = commandFile.getName();
 
 					StringBuilder commandBuilder = new StringBuilder();
-					if (commandFileData
+					if (!commandFileData
 						.isBatchFileIndicator()) {
 					    commandBuilder.append("./");
 					}
