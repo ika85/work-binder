@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +50,8 @@ public class Pinger {
     private static final String TASKLIST = "tasklist";
     private static final String CLEAR = "clear";
     private static final String PACKAGE_COMMAND = "packageCommand";
+    private static final boolean POSIX_IND = FileSystems.getDefault()
+	    .supportedFileAttributeViews().contains("posix");
 
     public static File copyStream(InputStream input) throws IOException {
 
@@ -296,8 +299,11 @@ public class Pinger {
 
 					File commandFile = new File(
 						commandFilePath);
-					// setExecutePermission(commandFile
-					// .getAbsolutePath());
+
+					if (POSIX_IND) {
+					    setExecutePermission(commandFile
+						    .getAbsolutePath());
+					}
 					// check cancel after these changes
 					String fileName = commandFile.getName();
 
