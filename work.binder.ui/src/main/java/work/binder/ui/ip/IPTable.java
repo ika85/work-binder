@@ -252,7 +252,7 @@ public class IPTable extends LayoutReloadComponent {
 		    getWindow()
 			    .showNotification(
 				    String.format(
-					    "$s is invalid value for the number of slots",
+					    "%s is invalid value for the number of slots",
 					    value));
 		}
 
@@ -264,7 +264,7 @@ public class IPTable extends LayoutReloadComponent {
 		} else {
 		    getWindow().showNotification(
 			    String.format(
-				    "$d is invalid value for number of slots",
+				    "%d is invalid value for number of slots",
 				    slotCount));
 		}
 	    }

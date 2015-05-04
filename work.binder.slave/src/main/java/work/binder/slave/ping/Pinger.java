@@ -310,7 +310,7 @@ public class Pinger {
 					StringBuilder commandBuilder = new StringBuilder();
 					if (!commandFileData
 						.isBatchFileIndicator()) {
-					    commandBuilder.append("./");
+					    commandBuilder.append("/");
 					}
 					commandBuilder.append(commandFilePath);
 					commandBuilder.append(" ");
@@ -351,10 +351,13 @@ public class Pinger {
 
 	Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
 	// add owners permission
+	perms.add(PosixFilePermission.OWNER_READ);
 	perms.add(PosixFilePermission.OWNER_EXECUTE);
 	// add group permissions
+	perms.add(PosixFilePermission.GROUP_READ);
 	perms.add(PosixFilePermission.GROUP_EXECUTE);
 	// add others permissions
+	perms.add(PosixFilePermission.OTHERS_READ);
 	perms.add(PosixFilePermission.OTHERS_EXECUTE);
 
 	Files.setPosixFilePermissions(Paths.get(filePath), perms);

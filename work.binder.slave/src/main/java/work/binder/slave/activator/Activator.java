@@ -1,5 +1,7 @@
 package work.binder.slave.activator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -7,9 +9,10 @@ import work.binder.slave.ping.Pinger;
 
 public class Activator implements BundleActivator {
 
-    private static final String MASTER_URL = "http://127.0.0.1:8080/work.binder.ui/ping";
-
+    private static Log LOG = LogFactory.getLog(Activator.class);
     private static BundleContext context;
+    private static final String MASTER_URL = "master.url";
+    private static final String EMPTY_STRING = "";
 
     static BundleContext getContext() {
 	return context;
@@ -18,6 +21,11 @@ public class Activator implements BundleActivator {
     public void start(BundleContext bundleContext) throws Exception {
 
 	Activator.context = bundleContext;
+	final String masterUrl = System.getProperty(MASTER_URL);
+
+	if (masterUrl == null || masterUrl.equals(EMPTY_STRING)) {
+	    LOG.error("master.url must be specified");
+	}
 
 	Thread thread = new Thread() {
 
@@ -26,13 +34,12 @@ public class Activator implements BundleActivator {
 
 		while (true) {
 
-		    Pinger.ping(MASTER_URL);
+		    Pinger.ping(masterUrl);
 
 		    try {
 			Thread.sleep(5000);
 		    } catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			LOG.error(e, e);
 		    }
 		}
 	    }

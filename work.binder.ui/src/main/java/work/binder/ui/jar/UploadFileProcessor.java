@@ -160,7 +160,6 @@ public class UploadFileProcessor extends LayoutReloadComponent {
 
     @Override
     public void reload() {
-	// TODO Auto-generated method stub
 
     }
 
