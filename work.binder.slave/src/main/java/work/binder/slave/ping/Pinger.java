@@ -308,10 +308,6 @@ public class Pinger {
 					String fileName = commandFile.getName();
 
 					StringBuilder commandBuilder = new StringBuilder();
-					if (!commandFileData
-						.isBatchFileIndicator()) {
-					    commandBuilder.append("/");
-					}
 					commandBuilder.append(commandFilePath);
 					commandBuilder.append(" ");
 					commandBuilder.append(commandFile
